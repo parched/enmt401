@@ -1,0 +1,87 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+
+
+
+\begin{document}
+\title{A Standalone Optical Navigation Aid for a UAV}
+\author{James Duley}
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+
+\pagenumbering{arabic}
+
+\section{Introduction}
+\subsection{Motivation\label{motivation}}
+Unmanned Aerial Vehicles (UAVs) typically rely on GPS for navigation, however, there are situations when this is not feasible, such as, indoors and when there is high interference. One option for navigating in such a situation is using an optical sensor. There are two main forms an optical navigation aid can take, they are
+\begin{itemize}
+	\item pure optical flow and
+	\item simultaneous localisation and mapping (SLAM)
+\end{itemize}
+
+\subsection{Pure optical flow}
+Pure optical flow systems generally use a low resolution sensor and return a mean 2D pixel flow this is then combined with range finding device and a 3D gyro to give ground velocities, attitude change rates and height above the ground. Robust solutions have already been implemented and are available for purchase\cite{pixflow}.https://store.3drobotics.com/products/px4flow
+
+Pros:
+\begin{itemize}
+	\item Robust solutions already exist.
+\end{itemize}
+Cons:
+\begin{itemize}
+	\item Gives velocities than need to be integrated for absolute distances which is prone to accumulative error.
+	\item Altitude limited by the range finding component, typically well under 100m.
+\end{itemize}
+
+\subsection{Visual SLAM}
+Visual SLAM can use depth sensing cameras such as stereo vision, time of flight camera, structured light etc., however, these all have limited distance so only monocular visual SLAM is consider. Monocular visual SLAM uses a single camera and picks out features in each frame. The relative motion of these features between frames is then used to create 3D point cloud of these features and the path of the camera relative to them. The accuracy of this method can be significantly increased by using the additional information from a gyro. A number of people have implemented such solutions but no robust standalone systems exist at the moment.
+
+Pros:
+\begin{itemize}
+	\item Unlimited altitude.
+\end{itemize}
+Cons:
+\begin{itemize}
+	\item Prone to accumulative error, but not like pure optical flow.
+	\item More computing power required.
+	\item Potentially more expensive as accuracy will depend on the quality of the camera.
+\end{itemize}
+
+\subsection{Proposed System\label{system}}
+The only solution worth implementing for this project is visual SLAM. This is because it offers the best performance potential and because no work needs to be done on pure optical flow.
+
+The system will use the following three pieces of hardware:
+\begin{itemize}
+	\item A single board computer (SBC).
+	\item An inertial measurement unit (IMU).
+	\item A camera.
+\end{itemize}
+
+The proposed SBC is an ODROID-U3 as it provides good performance for its price. It costs 65USD and can communicate with the IMU via I2C and with the flight controller via UART.
+
+The proposed IMU could be any number of devices but the Invensense MPU-9150 presents good value for 9DoF sensor which is available in a convenient breakout board that can be used for this project. It costs \~15USD.
+
+The camera is much harder to choose but ideally a machine vision camera with a global shutter which implements, ideally, the IIDC standard or the UVC standard.
+
+\section{Method\label{method}}
+To achieve the desired goal an number of different steps will be undertaken, they are:
+\begin{enumerate}
+	\item Create some data. Starting with a large detailed aerial view of some area, a sequence of frames will be created using the camera projection equations that match what the UAV would see if it flew over this fictitious view.
+	\item Write visual SLAM code and check if it gives correct results.
+	\item Record some real data from a UAV using a GPS and test the code on that footage.
+	\item Implement integration with the flight controller.
+	\item Test real system on UAV.
+	\item Implement other features, such as, loop closure, collision warning, etc., (if time permits).
+\end{enumerate}
+
+
+%\bibliography{../cv.bib}
+\bibliographystyle{unsrt}
+\end{document}

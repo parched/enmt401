@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.0)
+project(OpticalNavAid)
+find_package(OpenCV REQUIRED)
+add_executable(matcher-simple src/matcher_simple.cpp)
+target_link_libraries(matcher-simple ${OpenCV_LIBS})

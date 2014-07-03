@@ -2,6 +2,15 @@ papers/
 lit_review/
 proposal/
 report/as_submitted
+
+
+## CMake
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
+install_manifest.txt
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof

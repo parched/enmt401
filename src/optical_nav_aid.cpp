@@ -1,4 +1,4 @@
-/* OPtical navigation aid by James Duley <jagduley@gmail.com> */
+/* Optical navigation aid by James Duley <jagduley@gmail.com> */
 
 #include <stdlib.h>
 #include <argp.h>
@@ -8,7 +8,7 @@ const char *argp_program_bug_address = "<jagduley@gmail.com>";
 
 /* Program documentation. */
 static char doc[] = 
-"An optical navigation aid for a UAV";
+"An optical navigation aid for a UAV.";
 
 static struct argp argp = {0, 0, 0, doc};
 

@@ -1,7 +1,7 @@
 /* Optical navigation aid by James Duley <jagduley@gmail.com> */
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <iostream>
+#include <ctime>
 
 #include <argp.h>
 
@@ -19,42 +19,61 @@ const char *argp_program_bug_address = "<jagduley@gmail.com>";
 static char doc[] = 
 "An optical navigation aid for a UAV.";
 
+
 static struct argp argp = {0, 0, 0, doc};
 
 int main(int argc, char **argv) {
 	argp_parse (&argp, argc, argv, 0, 0, 0);
 
-	Mat img1 = imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE);
-	Mat img2 = imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE);
-	if(img1.empty() || img2.empty())
-	{
-	    printf("Can't read one of the images\n");
-	    return -1;
-	}
+	Mat lastFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE);
+	Mat currentFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE);
+	Mat img_matches;
 
-	// detecting keypoints
 	SurfFeatureDetector detector(3300);
-	vector<KeyPoint> keypoints1, keypoints2;
-	detector.detect(img1, keypoints1);
-	detector.detect(img2, keypoints2);
+	vector<KeyPoint> keyPointsLast, keyPointsCurrent;
 
-	// computing descriptors
 	SurfDescriptorExtractor extractor;
-	Mat descriptors1, descriptors2;
-	extractor.compute(img1, keypoints1, descriptors1);
-	extractor.compute(img2, keypoints2, descriptors2);
-
-	// matching descriptors
+	Mat descriptorsLast, descriptorsCurrent;
+	
 	BFMatcher matcher(NORM_L2);
 	vector<DMatch> matches;
-	matcher.match(descriptors1, descriptors2, matches);
 
-	// drawing the results
-	namedWindow("matches", 1);
-	Mat img_matches;
-	drawMatches(img1, keypoints1, img2, keypoints2, matches, img_matches);
-	imshow("matches", img_matches);
-	waitKey(0);
+	detector.detect(currentFrame, keyPointsCurrent);
+	extractor.compute(currentFrame, keyPointsCurrent, descriptorsCurrent);
+#ifndef NDEBUG
+	int frameCounter = 0;
+#endif
+	//clock_t tFrameAcquired;
+
+	while(waitKey(100) < 0){
+		Mat lastFrameAlso = lastFrame;
+		lastFrame = currentFrame;
+
+		currentFrame = lastFrameAlso;
+
+		//tFrameAcquired = clock();
+#ifndef NDEBUG
+		std::cout << "frame " << frameCounter << std::endl;
+		frameCounter++;
+#endif
+
+		// detecting keypoints
+		keyPointsLast = keyPointsCurrent;
+		detector.detect(currentFrame, keyPointsCurrent);
+
+		// computing descriptors
+		descriptorsLast = descriptorsCurrent;
+		extractor.compute(currentFrame, keyPointsCurrent, descriptorsCurrent);
+
+		// matching descriptors
+		matcher.match(descriptorsLast, descriptorsCurrent, matches);
+
+		// drawing the results
+		namedWindow("matches", 1);
+		drawMatches(lastFrame, keyPointsLast, currentFrame, keyPointsCurrent, matches, img_matches);
+		imshow("matches", img_matches);
+	}
+
 
 	return 0;
 }

@@ -45,16 +45,18 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
 
 static struct argp argp = {options, parse_opt, 0, doc};
 
-void drawMatchedFlow(const Mat &currentFrame, const vector<KeyPoint> &keyPointsLast, const vector<KeyPoint> &keyPointsCurrent, const vector<DMatch> &matches, Mat &imgMatches) {
+void drawMatchedFlow(const Mat &currentFrame, const vector<KeyPoint> &keyPointsLast, const vector<KeyPoint> &keyPointsCurrent, const vector<DMatch> &matches, float maxDistance, Mat &imgMatches) {
 
 	currentFrame.copyTo(imgMatches);
 
 	for (const DMatch &match : matches) {
-		Point2f lastPoint = keyPointsLast[match.queryIdx].pt;
-		Point2f currentPoint = keyPointsCurrent[match.trainIdx].pt;
+		if (maxDistance == 0 || match.distance <= maxDistance) {
+			Point2f lastPoint = keyPointsLast[match.queryIdx].pt;
+			Point2f currentPoint = keyPointsCurrent[match.trainIdx].pt;
 
-		line(imgMatches, lastPoint, currentPoint, Scalar(0, 0, 255));
-		circle(imgMatches, currentPoint, 5, Scalar(0, 0, 255));
+			line(imgMatches, lastPoint, currentPoint, Scalar(0, 0, 255));
+			circle(imgMatches, currentPoint, 5, Scalar(0, 0, 255));
+		}
 	}
 }
 
@@ -86,7 +88,7 @@ int main(int argc, char **argv) {
 
 	Mat img_matches;
 
-	SurfFeatureDetector detector(3300);
+	SurfFeatureDetector detector(400);
 	vector<KeyPoint> keyPointsLast, keyPointsCurrent;
 
 	SurfDescriptorExtractor extractor;
@@ -132,7 +134,7 @@ int main(int argc, char **argv) {
 
 		// drawing the results
 		namedWindow("matches", 1);
-		drawMatchedFlow(currentFrame, keyPointsLast, keyPointsCurrent, matches, img_matches);
+		drawMatchedFlow(currentFrame, keyPointsLast, keyPointsCurrent, matches, 0.5, img_matches);
 		imshow("matches", img_matches);
 	}
 

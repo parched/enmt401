@@ -4,7 +4,6 @@ find_package(OpenCV REQUIRED)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wpedantic")
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Werror -Wpedantic")
 endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)

@@ -58,6 +58,8 @@ void drawMatchedFlow(const Mat &currentFrame, const vector<KeyPoint> &keyPointsL
 	}
 }
 
+enum input_t {PIC, VID, CAM};
+
 int main(int argc, char **argv) {
 
 	struct arguments arguments;
@@ -65,8 +67,23 @@ int main(int argc, char **argv) {
 
 	argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
-	Mat lastFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE);
-	Mat currentFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE);
+	VideoCapture cap;
+	Mat lastFrame, currentFrame;
+	input_t input;
+
+	cap.open(arguments.inputFile);
+	if (!cap.isOpened()) {
+		input = PIC;
+		std::cout << "video not open" << std::endl;
+		lastFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE);
+		currentFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE);
+	}
+	else {
+		input = VID;
+		std::cout << "video open" << std::endl;
+		if(!cap.read(currentFrame)) return 1;
+	}
+
 	Mat img_matches;
 
 	SurfFeatureDetector detector(3300);
@@ -86,10 +103,15 @@ int main(int argc, char **argv) {
 	//clock_t tFrameAcquired;
 
 	while(waitKey(100) < 0){
-		Mat lastFrameAlso = lastFrame;
-		lastFrame = currentFrame;
-
-		currentFrame = lastFrameAlso;
+		if (input == PIC) {
+			Mat lastFrameAlso = lastFrame;
+			lastFrame = currentFrame;
+			currentFrame = lastFrameAlso;
+		}
+		else if (input == VID) {
+			lastFrame = currentFrame;
+			if (!cap.read(currentFrame)) break;
+		}
 
 		//tFrameAcquired = clock();
 #ifndef NDEBUG

@@ -20,8 +20,30 @@ const char *argp_program_bug_address = "<jagduley@gmail.com>";
 static char doc[] = 
 "An optical navigation aid for a UAV.";
 
+static struct argp_option options[] = {
+	{"input", 'i', "FILE", 0, "Input file"},
+	{0}
+};
 
-static struct argp argp = {0, 0, 0, doc};
+struct arguments {
+	std::string inputFile;
+};
+
+static error_t parse_opt(int key, char *arg, struct argp_state *state) {
+	struct arguments *arguments = (struct arguments *)state->input;
+
+	switch (key) {
+		case 'i':
+			arguments->inputFile = arg;
+			break;
+		default:
+			return ARGP_ERR_UNKNOWN;
+	}
+
+	return 0;
+}
+
+static struct argp argp = {options, parse_opt, 0, doc};
 
 void drawMatchedFlow(const Mat &currentFrame, const vector<KeyPoint> &keyPointsLast, const vector<KeyPoint> &keyPointsCurrent, const vector<DMatch> &matches, Mat &imgMatches) {
 
@@ -37,7 +59,11 @@ void drawMatchedFlow(const Mat &currentFrame, const vector<KeyPoint> &keyPointsL
 }
 
 int main(int argc, char **argv) {
-	argp_parse (&argp, argc, argv, 0, 0, 0);
+
+	struct arguments arguments;
+	arguments.inputFile = "-";
+
+	argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
 	Mat lastFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE);
 	Mat currentFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE);

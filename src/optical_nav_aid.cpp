@@ -3,12 +3,13 @@
 #include <iostream>
 #include <ctime>
 
-#include <argp.h>
-
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/nonfree/nonfree.hpp>
+
+/* This needs to go last or it causes an error with c++11 */
+#include <argp.h>
 
 using namespace cv;
 

@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
 	SurfDescriptorExtractor extractor;
 	Mat descriptorsLast, descriptorsCurrent;
 	
-	BFMatcher matcher(NORM_L2);
+	BFMatcher matcher(NORM_L2, true);
 	vector<DMatch> matches;
 
 	detector.detect(currentFrame, keyPointsCurrent);

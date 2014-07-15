@@ -61,14 +61,17 @@ void getMatchedPoints(vector<Point2f> &lastPoints, vector<Point2f> &currentPoint
 	}
 }
 
-void drawMatchedFlow(const Mat &currentFrame, const vector<Point2f> &lastPoints, const vector<Point2f> &currentPoints, Mat &imgMatches) {
+void drawMatchedFlow(const Mat &currentFrame, Mat &imgMatches, const vector<Point2f> &lastPoints, const vector<Point2f> &currentPoints, const vector<uchar> &inliers) {
 	currentFrame.copyTo(imgMatches);
 
 	assert(lastPoints.size() == currentPoints.size());
+	assert(lastPoints.size() == inliers.size());
 
 	for (vector<Point2f>::size_type i = 0; i != lastPoints.size(); i++) {
-		line(imgMatches, lastPoints[i], currentPoints[i], Scalar(0, 0, 255));
-		circle(imgMatches, currentPoints[i], 2, Scalar(0, 0, 255));
+		if (inliers[i]) {
+			line(imgMatches, lastPoints[i], currentPoints[i], Scalar(0, 0, 255));
+			circle(imgMatches, currentPoints[i], 2, Scalar(0, 0, 255));
+		}
 	}
 }
 
@@ -154,7 +157,7 @@ int main(int argc, char **argv) {
 
 		// drawing the results
 		namedWindow("matches", 1);
-		drawMatchedFlow(currentFrame, lastPoints, currentPoints, img_matches);
+		drawMatchedFlow(currentFrame, img_matches, lastPoints, currentPoints, inliers);
 		imshow("matches", img_matches);
 	}
 

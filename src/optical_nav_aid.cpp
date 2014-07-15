@@ -4,6 +4,7 @@
 #include <ctime>
 
 #include <opencv2/core/core.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/nonfree/nonfree.hpp>
@@ -26,6 +27,8 @@ namespace {
 	};
 	
 	const float maxKeyPointDistance = 0.5;
+	const double ransacMaxDistance = 1.;
+	const double ransacConfidence = 0.99;
 }
 
 struct arguments {
@@ -144,6 +147,10 @@ int main(int argc, char **argv) {
 		// getting the matched points
 		vector<Point2f> lastPoints, currentPoints;
 		getMatchedPoints(lastPoints, currentPoints, keyPointsLast, keyPointsCurrent, matches, maxKeyPointDistance);
+
+		// find the fundemental matrix F
+		vector<uchar> inliers(lastPoints.size());
+		Mat F = findFundamentalMat(lastPoints, currentPoints, FM_RANSAC, ransacMaxDistance, ransacConfidence, inliers);
 
 		// drawing the results
 		namedWindow("matches", 1);

@@ -13,6 +13,10 @@
 
 using namespace cv;
 
+namespace {
+	const float maxKeyPointDistance = 0.5;
+}
+
 const char *argp_program_version = "Optical Navigation Aid v?";
 const char *argp_program_bug_address = "<jagduley@gmail.com>";
 
@@ -45,18 +49,24 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
 
 static struct argp argp = {options, parse_opt, 0, doc};
 
-void drawMatchedFlow(const Mat &currentFrame, const vector<KeyPoint> &keyPointsLast, const vector<KeyPoint> &keyPointsCurrent, const vector<DMatch> &matches, float maxDistance, Mat &imgMatches) {
-
-	currentFrame.copyTo(imgMatches);
+void getMatchedPoints(vector<Point2f> &lastPoints, vector<Point2f> &currentPoints, const vector<KeyPoint> &keyPointsLast, const vector<KeyPoint> &keyPointsCurrent, const vector<DMatch> &matches, float maxDistance) {
 
 	for (const DMatch &match : matches) {
 		if (maxDistance == 0 || match.distance <= maxDistance) {
-			Point2f lastPoint = keyPointsLast[match.queryIdx].pt;
-			Point2f currentPoint = keyPointsCurrent[match.trainIdx].pt;
-
-			line(imgMatches, lastPoint, currentPoint, Scalar(0, 0, 255));
-			circle(imgMatches, currentPoint, 5, Scalar(0, 0, 255));
+			lastPoints.push_back(keyPointsLast[match.queryIdx].pt);
+			currentPoints.push_back(keyPointsCurrent[match.trainIdx].pt);
 		}
+	}
+}
+
+void drawMatchedFlow(const Mat &currentFrame, const vector<Point2f> &lastPoints, const vector<Point2f> &currentPoints, Mat &imgMatches) {
+	currentFrame.copyTo(imgMatches);
+
+	assert(lastPoints.size() == currentPoints.size());
+
+	for (vector<Point2f>::size_type i = 0; i != lastPoints.size(); i++) {
+		line(imgMatches, lastPoints[i], currentPoints[i], Scalar(0, 0, 255));
+		circle(imgMatches, currentPoints[i], 2, Scalar(0, 0, 255));
 	}
 }
 
@@ -132,9 +142,13 @@ int main(int argc, char **argv) {
 		// matching descriptors
 		matcher.match(descriptorsLast, descriptorsCurrent, matches);
 
+		// getting the matched points
+		vector<Point2f> lastPoints, currentPoints;
+		getMatchedPoints(lastPoints, currentPoints, keyPointsLast, keyPointsCurrent, matches, maxKeyPointDistance);
+
 		// drawing the results
 		namedWindow("matches", 1);
-		drawMatchedFlow(currentFrame, keyPointsLast, keyPointsCurrent, matches, 0.5, img_matches);
+		drawMatchedFlow(currentFrame, lastPoints, currentPoints, img_matches);
 		imshow("matches", img_matches);
 	}
 

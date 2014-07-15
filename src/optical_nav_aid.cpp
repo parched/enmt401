@@ -13,21 +13,20 @@
 
 using namespace cv;
 
-namespace {
-	const float maxKeyPointDistance = 0.5;
-}
-
 const char *argp_program_version = "Optical Navigation Aid v?";
 const char *argp_program_bug_address = "<jagduley@gmail.com>";
 
-/* Program documentation. */
-static char doc[] = 
-"An optical navigation aid for a UAV.";
+namespace {
+	/* Program documentation. */
+	const char doc[] = "An optical navigation aid for a UAV.";
 
-static struct argp_option options[] = {
-	{"input", 'i', "FILE", 0, "Input file"},
-	{0}
-};
+	const struct argp_option options[] = {
+		{"input", 'i', "FILE", 0, "Input file"},
+		{0}
+	};
+	
+	const float maxKeyPointDistance = 0.5;
+}
 
 struct arguments {
 	std::string inputFile;

@@ -29,6 +29,8 @@ namespace {
 	const float maxKeyPointDistance = 0.5;
 	const double ransacMaxDistance = 1.;
 	const double ransacConfidence = 0.99;
+
+	double tz40KData[] = {520., 0., 320., 0., 520., 240., 0., 0., 1.};
 }
 
 struct arguments {
@@ -73,6 +75,28 @@ void drawMatchedFlow(const Mat &currentFrame, Mat &imgMatches, const vector<Poin
 			circle(imgMatches, currentPoints[i], 2, Scalar(0, 0, 255));
 		}
 	}
+}
+
+void getRt(Mat_<double> &E, Mat_<double> &R, Mat_<double> &t) {
+
+	// SVD to get projection
+	Mat w, u, vt;
+	SVD::compute(E, w, u, vt, SVD::MODIFY_A);
+
+	Matx33d W(0., -1., 0., 1., 0., 0., 0., 0., 1.);
+
+	R = u * Mat(W) * vt;
+	
+	t = u.col(2);
+}
+
+bool checkCoherentRotation(const Mat_<double> &R) {
+	if (std::abs(determinant(R)) - 1. > 1e-07) {
+		std::cerr << "|det(R)| != 1, not a rotation matrix" << std::endl;
+		return false;
+	}
+
+	return true;
 }
 
 enum input_t {PIC, VID, CAM};
@@ -154,6 +178,19 @@ int main(int argc, char **argv) {
 		// find the fundemental matrix F
 		vector<uchar> inliers(lastPoints.size());
 		Mat F = findFundamentalMat(lastPoints, currentPoints, FM_RANSAC, ransacMaxDistance, ransacConfidence, inliers);
+
+		// find the essential matrix
+		Mat K(3, 3, CV_64F, tz40KData);
+		Mat_<double> E = K.t() * F * K;
+
+		// get the rotation
+		Mat_<double> R, t;
+		getRt(E, R, t);
+#ifndef NDEBUG
+		if (checkCoherentRotation(R)) {
+			std::cout << R << std::endl;
+		}
+#endif
 
 		// drawing the results
 		namedWindow("matches", 1);

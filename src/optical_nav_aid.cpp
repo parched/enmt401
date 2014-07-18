@@ -99,6 +99,14 @@ bool checkCoherentRotation(const Mat_<double> &R) {
 	return true;
 }
 
+void printEulerAngles(const Mat_<double> &R) {
+	double alpha = std::atan2(R(2, 1), R(2, 2));
+	double beta = std::atan2(-R(2, 0), sqrt(R(2, 1) * R(2, 1) + R(2, 2) * R(2, 2)));
+	double gamma = std::atan2(R(1, 0), R(0, 0));
+
+	std::cout << alpha << " " << beta << " " << gamma << " " << std::endl;
+}
+
 enum input_t {PIC, VID, CAM};
 
 int main(int argc, char **argv) {
@@ -126,6 +134,8 @@ int main(int argc, char **argv) {
 	}
 
 	Mat img_matches;
+
+	Mat totalR = Mat::eye(3, 3, CV_64F);
 
 	SurfFeatureDetector detector(400);
 	vector<KeyPoint> keyPointsLast, keyPointsCurrent;
@@ -192,6 +202,11 @@ int main(int argc, char **argv) {
 		}
 #endif
 
+		// add to tally
+		totalR = totalR * R;
+#ifndef NDEBUG
+		printEulerAngles(totalR);
+#endif
 		// drawing the results
 		namedWindow("matches", 1);
 		drawMatchedFlow(currentFrame, img_matches, lastPoints, currentPoints, inliers);

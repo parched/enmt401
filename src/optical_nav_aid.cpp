@@ -90,6 +90,12 @@ void getRt(Mat_<double> &E, Mat_<double> &R, Mat_<double> &t) {
 	t = u.col(2);
 }
 
+void getP(Matx34d &P, const Mat_<double> &R, const Mat_<double> &t) {
+	P = Matx34d(R(0, 0), R(0, 1), R(0, 2), t(0), 
+			R(1, 0), R(1, 1), R(1, 2), t(1), 
+			R(2, 0), R(2, 1), R(2, 2), t(2));
+}
+
 bool checkCoherentRotation(const Mat_<double> &R) {
 	if (std::abs(determinant(R)) - 1. > 1e-07) {
 		std::cerr << "|det(R)| != 1, not a rotation matrix" << std::endl;

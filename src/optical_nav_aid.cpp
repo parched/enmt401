@@ -24,8 +24,8 @@ namespace {
 	const char doc[] = "An optical navigation aid for a UAV.";
 
 	const struct argp_option options[] = {
-		{"input", 'i', "FILE", 0, "Input file"},
-		{0}
+		{"input", 'i', "FILE", 0, "Input file", 0},
+		{0, 0, 0, 0, 0, 0}
 	};
 	
 	const float maxKeyPointDistance = 0.5;
@@ -53,7 +53,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
 	return 0;
 }
 
-static struct argp argp = {options, parse_opt, 0, doc};
+static struct argp argp = {options, parse_opt, 0, doc, 0, 0, 0};
 
 void getRt(Mat_<double> &E, Mat_<double> &R, Mat_<double> &t) {
 

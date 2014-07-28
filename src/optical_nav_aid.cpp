@@ -110,8 +110,7 @@ int main(int argc, char **argv) {
 		std::cout << "video not open" << std::endl;
 		lastFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE);
 		currentFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE);
-	}
-	else {
+	} else {
 		input = VID;
 		std::cout << "video open" << std::endl;
 		if(!cap.read(currentFrame)) return 1;
@@ -142,8 +141,7 @@ int main(int argc, char **argv) {
 			Mat lastFrameAlso = lastFrame;
 			lastFrame = currentFrame;
 			currentFrame = lastFrameAlso;
-		}
-		else if (input == VID) {
+		} else if (input == VID) {
 			lastFrame = currentFrame;
 			if (!cap.read(currentFrame)) break;
 		}

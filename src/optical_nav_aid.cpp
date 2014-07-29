@@ -6,6 +6,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/nonfree/nonfree.hpp>
 
@@ -33,7 +34,7 @@ namespace {
 	const double ransacMaxDistance = 1.;
 	const double ransacConfidence = 0.99;
 
-	double tz40KData[] = {520., 0., 320., 0., 520., 240., 0., 0., 1.};
+	float tz40KData[] = {520., 0., 320., 0., 520., 240., 0., 0., 1.};
 }
 
 struct arguments {
@@ -96,6 +97,11 @@ int main(int argc, char **argv) {
 
 	detector.detect(currentFrame, keyPointsCurrent);
 	extractor.compute(currentFrame, keyPointsCurrent, descriptorsCurrent);
+
+	// the camera matrix and distortion coeffs
+	Mat K(3, 3, CV_32F, tz40KData);
+	vector<float> distCoeffs;
+
 #ifndef NDEBUG
 	int frameCounter = 0;
 #endif
@@ -132,13 +138,14 @@ int main(int argc, char **argv) {
 		vector<Point2f> lastPoints, currentPoints;
 		getMatchedPoints(lastPoints, currentPoints, keyPointsLast, keyPointsCurrent, matches, maxKeyPointDistance);
 
-		// find the fundemental matrix F
-		vector<uchar> inliers(lastPoints.size());
-		Mat F = findFundamentalMat(lastPoints, currentPoints, FM_RANSAC, ransacMaxDistance, ransacConfidence, inliers);
+		// undistort and put in normal coordinates
+		vector<Point2f> lastPointsNormal, currentPointsNormal;
+		undistortPoints(lastPoints, lastPointsNormal, K, distCoeffs);
+		undistortPoints(currentPoints, currentPointsNormal, K, distCoeffs);
 
-		// find the essential matrix
-		Mat K(3, 3, CV_64F, tz40KData);
-		Mat_<double> E = K.t() * F * K;
+		// find the essential matrix E
+		vector<uchar> inliers(lastPoints.size());
+		Mat E = findFundamentalMat(lastPointsNormal, currentPointsNormal, FM_RANSAC, ransacMaxDistance, ransacConfidence, inliers);
 
 		// get the rotation
 		Mat_<double> R, t;

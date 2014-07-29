@@ -14,5 +14,5 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 add_executable(matcher-simple src/matcher_simple.cpp)
 target_link_libraries(matcher-simple ${OpenCV_LIBS})
 
-add_executable(optical-nav-aid src/optical_nav_aid.cpp src/matches.cpp)
+add_executable(optical-nav-aid src/optical_nav_aid.cpp src/matches.cpp src/pose.cpp)
 target_link_libraries(optical-nav-aid ${OpenCV_LIBS})

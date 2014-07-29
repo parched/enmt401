@@ -148,8 +148,8 @@ int main(int argc, char **argv) {
 		Mat E = findFundamentalMat(lastPointsNormal, currentPointsNormal, FM_RANSAC, ransacMaxDistance, ransacConfidence, inliers);
 
 		// get the rotation
-		Mat_<double> R, t;
-		getRt(E, R, t);
+		Mat R, t, mask;
+		recoverPose(E, lastPointsNormal, currentPointsNormal, R, t, mask);
 #ifndef NDEBUG
 		if (checkCoherentRotation(R)) {
 			std::cout << R << std::endl;

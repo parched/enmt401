@@ -44,4 +44,9 @@ bool checkCoherentRotation(const cv::Mat_<double> &R);
  */
 void printEulerAngles(const cv::Mat_<double> &R);
 
+
+
+int recoverPose( const cv::Mat &E, cv::InputArray _points1, cv::InputArray _points2, cv::Mat &_R,
+                     cv::Mat &_t, cv::InputOutputArray _mask);
+
 #endif

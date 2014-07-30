@@ -28,6 +28,7 @@ namespace {
 
 	const struct argp_option options[] = {
 		{"input", 'i', "FILE", 0, "Input file or camera index", 0},
+		{"output", 'o', "FILE", 0, "Output file", 0},
 		{0, 0, 0, 0, 0, 0}
 	};
 	
@@ -40,6 +41,7 @@ namespace {
 
 struct arguments {
 	std::string inputFile;
+	std::string outputFile;
 };
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state) {
@@ -48,6 +50,9 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
 	switch (key) {
 		case 'i':
 			arguments->inputFile = arg;
+			break;
+		case 'o':
+			arguments->outputFile = arg;
 			break;
 		default:
 			return ARGP_ERR_UNKNOWN;
@@ -63,13 +68,14 @@ enum input_t {PIC, VID, CAM};
 int main(int argc, char **argv) {
 
 	struct arguments arguments;
-	arguments.inputFile = "-";
 
 	argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
 	VideoCapture cap;
 	Mat lastFrame, currentFrame;
 	input_t input;
+
+	int outFps = 10;
 
 	std::string inputFile = arguments.inputFile;
 	int cameraIndex;
@@ -85,12 +91,28 @@ int main(int argc, char **argv) {
 
 	if (cap.isOpened()) {
 		std::cout << "stream open" << std::endl;
+
+		outFps = cap.get(CV_CAP_PROP_FPS);
+
 		if(!cap.read(currentFrame)) return 1;
 	} else {
 		input = PIC;
 		std::cout << "stream not open" << std::endl;
+
 		lastFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE);
 		currentFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE);
+	}
+
+	VideoWriter out;
+	if (!arguments.outputFile.empty()) {
+		out.open(arguments.outputFile, CV_FOURCC('M', 'J', 'P', 'G'), outFps, currentFrame.size());
+
+		if (out.isOpened()) {
+			std::cout << "writing to " << arguments.outputFile << std::endl;
+		} else {
+			std::cout << "!!! Output video could not be opened" << std::endl;
+			return 1;
+		}
 	}
 
 	Mat img_matches;
@@ -175,6 +197,8 @@ int main(int argc, char **argv) {
 		namedWindow("matches", 1);
 		drawMatchedFlow(currentFrame, img_matches, lastPoints, currentPoints, inliers);
 		imshow("matches", img_matches);
+
+		out.write(img_matches);
 	}
 
 	return 0;

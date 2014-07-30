@@ -164,15 +164,11 @@ int main(int argc, char **argv) {
 		// get the rotation
 		Mat R, t, mask;
 		recoverPose(E, lastPointsNormal, currentPointsNormal, R, t, mask);
-#ifndef NDEBUG
-		if (checkCoherentRotation(R)) {
-			std::cout << R << std::endl;
-		}
-#endif
 
 		// add to tally
 		totalR = totalR * R;
 #ifndef NDEBUG
+		std::cout << t.t() << "   ";
 		printEulerAngles(totalR);
 #endif
 		// drawing the results

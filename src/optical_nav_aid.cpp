@@ -1,6 +1,7 @@
 /* Optical navigation aid by James Duley <jagduley@gmail.com> */
 
 #include <iostream>
+#include <sstream>
 #include <ctime>
 
 #include <opencv2/core/core.hpp>
@@ -26,7 +27,7 @@ namespace {
 	const char doc[] = "An optical navigation aid for a UAV.";
 
 	const struct argp_option options[] = {
-		{"input", 'i', "FILE", 0, "Input file", 0},
+		{"input", 'i', "FILE", 0, "Input file or camera index", 0},
 		{0, 0, 0, 0, 0, 0}
 	};
 	
@@ -70,16 +71,26 @@ int main(int argc, char **argv) {
 	Mat lastFrame, currentFrame;
 	input_t input;
 
-	cap.open(arguments.inputFile);
-	if (!cap.isOpened()) {
-		input = PIC;
-		std::cout << "video not open" << std::endl;
-		lastFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE);
-		currentFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE);
+	std::string inputFile = arguments.inputFile;
+	int cameraIndex;
+
+	std::stringstream inputConvert(inputFile);
+	if (inputConvert >> cameraIndex) {
+		input = CAM;
+		cap.open(cameraIndex);
 	} else {
 		input = VID;
-		std::cout << "video open" << std::endl;
+		cap.open(inputFile);
+	}
+
+	if (cap.isOpened()) {
+		std::cout << "stream open" << std::endl;
 		if(!cap.read(currentFrame)) return 1;
+	} else {
+		input = PIC;
+		std::cout << "stream not open" << std::endl;
+		lastFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE);
+		currentFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE);
 	}
 
 	Mat img_matches;
@@ -112,15 +123,18 @@ int main(int argc, char **argv) {
 			Mat lastFrameAlso = lastFrame;
 			lastFrame = currentFrame;
 			currentFrame = lastFrameAlso;
-		} else if (input == VID) {
+		} else if (input == VID || input == CAM) {
 			lastFrame = currentFrame;
-			if (!cap.read(currentFrame)) break;
+			if (!cap.read(currentFrame)) {
+				std::cout << "end of stream" << std::endl;
+				break;
+			}
 		}
 
 		//tFrameAcquired = clock();
 #ifndef NDEBUG
-		std::cout << "frame " << frameCounter << std::endl;
 		frameCounter++;
+		std::cout << "frame " << frameCounter << std::endl;
 #endif
 
 		// detecting keypoints

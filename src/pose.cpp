@@ -35,12 +35,10 @@ bool checkCoherentRotation(const Mat_<double> &R) {
 	return true;
 }
 
-void printEulerAngles(const Mat_<double> &R) {
-	double alpha = std::atan2(R(2, 1), R(2, 2));
-	double beta = std::atan2(-R(2, 0), sqrt(R(2, 1) * R(2, 1) + R(2, 2) * R(2, 2)));
-	double gamma = std::atan2(R(1, 0), R(0, 0));
-
-	std::cout << alpha << " " << beta << " " << gamma << " " << std::endl;
+void getEulerAngles(const Mat_<double> &R, Vec3d &angles) {
+	angles(0)  = std::atan2(R(2, 1), R(2, 2));
+	angles(1)  = std::atan2(-R(2, 0), sqrt(R(2, 1) * R(2, 1) + R(2, 2) * R(2, 2)));
+	angles(2)  = std::atan2(R(1, 0), R(0, 0));
 }
 
 /*-----from opencv 3 five-point.cpp------------------------------*/

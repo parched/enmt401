@@ -1,6 +1,7 @@
 /* Optical navigation aid by James Duley <jagduley@gmail.com> */
 
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <ctime>
 
@@ -105,7 +106,7 @@ int main(int argc, char **argv) {
 
 	VideoWriter out;
 	if (!arguments.outputFile.empty()) {
-		out.open(arguments.outputFile, CV_FOURCC('M', 'J', 'P', 'G'), outFps, currentFrame.size());
+		out.open(arguments.outputFile, CV_FOURCC('H', '2', '6', '4'), outFps, currentFrame.size());
 
 		if (out.isOpened()) {
 			std::cout << "writing to " << arguments.outputFile << std::endl;
@@ -190,12 +191,22 @@ int main(int argc, char **argv) {
 		// add to tally
 		totalR = totalR * R;
 #ifndef NDEBUG
-		std::cout << t.t() << "   ";
-		printEulerAngles(totalR);
+		Vec3d eulerAngles;
+		getEulerAngles(totalR, eulerAngles);
+		std::stringstream poseInfo;
+		poseInfo.setf(std::ios::fixed, std::ios::floatfield);
+		poseInfo.precision(2);
+		poseInfo << "Angle: " << std::setw(6) << eulerAngles(0) << std::setw(6) << eulerAngles(1) << std::setw(6) << eulerAngles(2);
+		poseInfo << "   Direction: " << std::setw(6) << t.at<double>(0) << std::setw(6) << t.at<double>(1) << std::setw(6) << t.at<double>(2);
+		std::cout << poseInfo.str() << std::endl;
 #endif
 		// drawing the results
 		namedWindow("matches", 1);
 		drawMatchedFlow(currentFrame, img_matches, lastPoints, currentPoints, inliers);
+#ifndef NDEBUG
+		putText(img_matches, poseInfo.str(), Point(15, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0xf7, 0x2e, 0xfe));
+#endif
+
 		imshow("matches", img_matches);
 
 		out.write(img_matches);

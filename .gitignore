@@ -10,6 +10,9 @@ lit_review/
 proposal/
 report/as_submitted
 
+##output video
+*.mp4
+
 
 ## CMake
 CMakeCache.txt

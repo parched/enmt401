@@ -10,8 +10,18 @@
 class OnaFrame {
 	public:
 		cv::Mat image;
+		cv::Mat cameraMatrix;
+		std::vector<float> distCoeffs;
 		std::vector<cv::KeyPoint> keyPoints;
 		cv::Mat descriptors;
+
+		/**
+		 * \brief OnaFrame constructor.
+		 *
+		 * \param cameraMatrix The corresponding camera matirx.
+		 * \param distCoeffs The corresponding radial distortion coefficients.
+		 */
+		OnaFrame(cv::Mat cameraMatrix, std::vector<float> distCoeffs);
 
 		/**
 		 * \brief Compute the keyPoints descriptors.

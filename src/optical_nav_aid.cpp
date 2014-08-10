@@ -73,8 +73,14 @@ int main(int argc, char **argv) {
 
 	argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
+	// the camera matrix and distortion coeffs
+	Mat K(3, 3, CV_32F, tz40KData);
+	vector<float> distCoeffs;
+
+	OnaFrame currentFrame(K, distCoeffs);
+	OnaFrame lastFrame(K, distCoeffs);
+
 	VideoCapture cap;
-	OnaFrame lastFrame, currentFrame;
 	input_t input;
 
 	int outFps = 10;
@@ -132,10 +138,6 @@ int main(int argc, char **argv) {
 
 	currentFrame.compute(detector, extractor);
 
-	// the camera matrix and distortion coeffs
-	Mat K(3, 3, CV_32F, tz40KData);
-	vector<float> distCoeffs;
-
 #ifndef NDEBUG
 	int frameCounter = 0;
 #endif
@@ -148,9 +150,11 @@ int main(int argc, char **argv) {
 		if (input == PIC) {
 			Mat lastImage = lastFrame.image;
 			lastFrame = currentFrame;
+			currentFrame = OnaFrame(K, distCoeffs);
 			currentFrame.image = lastImage;
 		} else if (input == VID || input == CAM) {
 			lastFrame = currentFrame;
+			currentFrame = OnaFrame(K, distCoeffs);
 			if (!cap.read(currentFrame.image)) {
 				std::cout << "end of stream" << std::endl;
 				break;
@@ -175,8 +179,8 @@ int main(int argc, char **argv) {
 
 		// undistort and put in normal coordinates
 		vector<Point2f> lastPointsNormal, currentPointsNormal;
-		undistortPoints(lastPoints, lastPointsNormal, K, distCoeffs);
-		undistortPoints(currentPoints, currentPointsNormal, K, distCoeffs);
+		undistortPoints(lastPoints, lastPointsNormal, lastFrame.cameraMatrix, lastFrame.distCoeffs);
+		undistortPoints(currentPoints, currentPointsNormal, currentFrame.cameraMatrix, currentFrame.distCoeffs);
 
 		// find the essential matrix E
 		vector<uchar> inliers(lastPoints.size());

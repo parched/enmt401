@@ -3,6 +3,9 @@
 
 using namespace cv;
 
+OnaFrame::OnaFrame(Mat cameraMatrix, std::vector<float> distCoeffs): cameraMatrix(cameraMatrix), distCoeffs(distCoeffs) {
+}
+
 bool OnaFrame::compute(FeatureDetector &detector, DescriptorExtractor &extractor) {
 	CV_Assert(!image.empty());
 

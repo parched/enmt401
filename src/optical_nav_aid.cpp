@@ -14,6 +14,7 @@
 
 #include "matches.hpp"
 #include "pose.hpp"
+#include "onaframe.hpp"
 
 /* This needs to go last or it causes an error with c++11 */
 #include <argp.h>
@@ -73,7 +74,7 @@ int main(int argc, char **argv) {
 	argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
 	VideoCapture cap;
-	Mat lastFrame, currentFrame;
+	OnaFrame lastFrame, currentFrame;
 	input_t input;
 
 	int outFps = 10;
@@ -95,18 +96,18 @@ int main(int argc, char **argv) {
 
 		outFps = cap.get(CV_CAP_PROP_FPS);
 
-		if(!cap.read(currentFrame)) return 1;
+		if(!cap.read(currentFrame.image)) return 1;
 	} else {
 		input = PIC;
 		std::cout << "stream not open" << std::endl;
 
-		lastFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE);
-		currentFrame = imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE);
+		lastFrame.image = imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE);
+		currentFrame.image = imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE);
 	}
 
 	VideoWriter out;
 	if (!arguments.outputFile.empty()) {
-		out.open(arguments.outputFile, CV_FOURCC('H', '2', '6', '4'), outFps, currentFrame.size());
+		out.open(arguments.outputFile, CV_FOURCC('H', '2', '6', '4'), outFps, currentFrame.image.size());
 
 		if (out.isOpened()) {
 			std::cout << "writing to " << arguments.outputFile << std::endl;
@@ -123,16 +124,13 @@ int main(int argc, char **argv) {
 	Mat totalR = Mat::eye(3, 3, CV_64F);
 
 	SurfFeatureDetector detector(400);
-	vector<KeyPoint> keyPointsLast, keyPointsCurrent;
 
 	SurfDescriptorExtractor extractor;
-	Mat descriptorsLast, descriptorsCurrent;
 	
 	BFMatcher matcher(NORM_L2, true);
 	vector<DMatch> matches;
 
-	detector.detect(currentFrame, keyPointsCurrent);
-	extractor.compute(currentFrame, keyPointsCurrent, descriptorsCurrent);
+	currentFrame.compute(detector, extractor);
 
 	// the camera matrix and distortion coeffs
 	Mat K(3, 3, CV_32F, tz40KData);
@@ -148,12 +146,12 @@ int main(int argc, char **argv) {
 #endif
 	while(waitKey(100) < 0){
 		if (input == PIC) {
-			Mat lastFrameAlso = lastFrame;
+			Mat lastImage = lastFrame.image;
 			lastFrame = currentFrame;
-			currentFrame = lastFrameAlso;
+			currentFrame.image = lastImage;
 		} else if (input == VID || input == CAM) {
 			lastFrame = currentFrame;
-			if (!cap.read(currentFrame)) {
+			if (!cap.read(currentFrame.image)) {
 				std::cout << "end of stream" << std::endl;
 				break;
 			}
@@ -165,20 +163,15 @@ int main(int argc, char **argv) {
 		std::cout << "frame " << frameCounter << std::endl;
 #endif
 
-		// detecting keypoints
-		keyPointsLast = keyPointsCurrent;
-		detector.detect(currentFrame, keyPointsCurrent);
-
 		// computing descriptors
-		descriptorsLast = descriptorsCurrent;
-		extractor.compute(currentFrame, keyPointsCurrent, descriptorsCurrent);
+		currentFrame.compute(detector, extractor);
 
 		// matching descriptors
-		matcher.match(descriptorsLast, descriptorsCurrent, matches);
+		matcher.match(lastFrame.descriptors, currentFrame.descriptors, matches);
 
 		// getting the matched points
 		vector<Point2f> lastPoints, currentPoints;
-		getMatchedPoints(lastPoints, currentPoints, keyPointsLast, keyPointsCurrent, matches, maxKeyPointDistance);
+		getMatchedPoints(lastPoints, currentPoints, lastFrame.keyPoints, currentFrame.keyPoints, matches, maxKeyPointDistance);
 
 		// undistort and put in normal coordinates
 		vector<Point2f> lastPointsNormal, currentPointsNormal;
@@ -207,7 +200,7 @@ int main(int argc, char **argv) {
 #endif
 		// drawing the results
 		namedWindow("matches", 1);
-		drawMatchedFlow(currentFrame, img_matches, lastPoints, currentPoints, inliers);
+		drawMatchedFlow(currentFrame.image, img_matches, lastPoints, currentPoints, inliers);
 #ifndef NDEBUG
 		putText(img_matches, poseInfo.str(), Point(15, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0xf7, 0x2e, 0xfe));
 #endif

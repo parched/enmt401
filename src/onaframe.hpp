@@ -60,6 +60,16 @@ class OnaFrame {
 		 */
 		bool match(WPtr frameToMatchTo, cv::DescriptorMatcher &matcher, float maxDistance);
 
+		/**
+		 * \brief Find the essential matrix from frame by id to this one.
+		 *
+		 * \param id The id of the frame to calculate from.
+		 * \param ransacMaxDistance The maximum permissible distance is pixels to epipolar line.
+		 * \param ransacConfidence The desired probability that the answer is correct.
+		 *
+		 * \return The essentail matrix.
+		 */
+		cv::Mat findEssentialMatRansac(int id, double ransacMaxDistance, double ransacConfidence);
 
 	protected:
 		int _id;
@@ -74,6 +84,8 @@ class OnaFrame {
 				WPtr trainFrame;
 				std::vector<int> queryIdx, trainIdx;
 				std::vector<cv::Point2f> queryNormalisedPoints, trainNormalisedPoints;
+				cv::Mat essential;
+				std::vector<uchar> inliers;
 		};
 
 		typedef std::map<int, OnaMatch> IdMatchMap;

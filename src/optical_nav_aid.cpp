@@ -176,11 +176,10 @@ int main(int argc, char **argv) {
 		// matching descriptors
 		currentFrame->match(lastFrame, matcher, maxDescriptorDistance);
 
-		/*
 		// find the essential matrix E
-		vector<uchar> inliers(lastPoints.size());
-		Mat E = findFundamentalMat(lastPointsNormal, currentPointsNormal, FM_RANSAC, ransacMaxDistance, ransacConfidence, inliers);
+		Mat E = currentFrame->findEssentialMatRansac(lastFrame->getId(), ransacMaxDistance, ransacConfidence);
 
+		/*
 		// get the rotation
 		Mat R, t, mask;
 		recoverPose(E, lastPointsNormal, currentPointsNormal, R, t, mask);

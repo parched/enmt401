@@ -1,6 +1,10 @@
 
 #include "onaframe.hpp"
+
+#include <iostream>
+
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
 
 using namespace cv;
 
@@ -52,4 +56,20 @@ bool OnaFrame::match(WPtr frameToMatchTo, DescriptorMatcher &matcher, float maxD
 	}
 
 	return true;
+}
+
+Mat OnaFrame::findEssentialMatRansac(int id, double ransacMaxDistance, double ransacConfidence) {
+	IdMatchMap::iterator frameMatchIt = frameMatches.find(id);
+
+	if (frameMatchIt != frameMatches.end()) {
+		OnaMatch *matchPtr = &(frameMatchIt->second);
+		matchPtr->essential = findFundamentalMat(matchPtr->trainNormalisedPoints, matchPtr->queryNormalisedPoints, FM_RANSAC, ransacMaxDistance, ransacConfidence, matchPtr->inliers);
+		return matchPtr->essential;
+	} else {
+#ifndef NDEBUG
+		std::cout << "Match to frame with id: " << id << " not found" << std::endl;
+#endif
+	}
+
+	return Mat();
 }

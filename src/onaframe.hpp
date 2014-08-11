@@ -1,6 +1,8 @@
 #ifndef ONAFRAME_HPP
 #define ONAFRAME_HPP
 
+#include <memory>
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
@@ -33,7 +35,27 @@ class OnaFrame {
 		 */
 		bool compute(cv::FeatureDetector &detector, cv::DescriptorExtractor &extractor);
 
+		/**
+		 * \brief Match descriptors to another frame.
+		 *
+		 * \param frameToMatchTo The train frame to match to.
+		 * \param matcher The DescriptorMatcher to use.
+		 * \param maxDistance The maximum allowable description distance to allow.
+		 *
+		 * \return Successfulness.
+		 */
+		bool match(std::weak_ptr<OnaFrame> frameToMatchTo, cv::DescriptorMatcher &matcher, float maxDistance);
+
 
 	protected:
+		struct OnaMatch {
+			public:
+				std::weak_ptr<OnaFrame> trainFrame;
+				std::vector<int> queryIdx, trainIdx;
+				std::vector<cv::Point2f> queryNormalisedPoints, trainNormalisedPoints;
+		};
+
+		std::vector<OnaMatch> frameMatches;
+
 };
 #endif

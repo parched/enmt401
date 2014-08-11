@@ -4,11 +4,11 @@
 #include <iomanip>
 #include <sstream>
 #include <ctime>
+#include <memory>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/features2d/features2d.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/nonfree/nonfree.hpp>
 
@@ -34,7 +34,7 @@ namespace {
 		{0, 0, 0, 0, 0, 0}
 	};
 	
-	const float maxKeyPointDistance = 0.5;
+	const float maxDescriptorDistance = 0.5;
 	const double ransacMaxDistance = 1.;
 	const double ransacConfidence = 0.99;
 
@@ -77,8 +77,8 @@ int main(int argc, char **argv) {
 	Mat K(3, 3, CV_32F, tz40KData);
 	vector<float> distCoeffs;
 
-	OnaFrame currentFrame(K, distCoeffs);
-	OnaFrame lastFrame(K, distCoeffs);
+	std::shared_ptr<OnaFrame> currentFrame(new OnaFrame(K, distCoeffs));
+	std::shared_ptr<OnaFrame> lastFrame(new OnaFrame(K, distCoeffs));
 
 	VideoCapture cap;
 	input_t input;
@@ -102,18 +102,18 @@ int main(int argc, char **argv) {
 
 		outFps = cap.get(CV_CAP_PROP_FPS);
 
-		if(!cap.read(currentFrame.image)) return 1;
+		if(!cap.read(currentFrame->image)) return 1;
 	} else {
 		input = PIC;
 		std::cout << "stream not open" << std::endl;
 
-		lastFrame.image = imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE);
-		currentFrame.image = imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE);
+		lastFrame->image = imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE);
+		currentFrame->image = imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE);
 	}
 
 	VideoWriter out;
 	if (!arguments.outputFile.empty()) {
-		out.open(arguments.outputFile, CV_FOURCC('H', '2', '6', '4'), outFps, currentFrame.image.size());
+		out.open(arguments.outputFile, CV_FOURCC('H', '2', '6', '4'), outFps, currentFrame->image.size());
 
 		if (out.isOpened()) {
 			std::cout << "writing to " << arguments.outputFile << std::endl;
@@ -134,9 +134,8 @@ int main(int argc, char **argv) {
 	SurfDescriptorExtractor extractor;
 	
 	BFMatcher matcher(NORM_L2, true);
-	vector<DMatch> matches;
 
-	currentFrame.compute(detector, extractor);
+	currentFrame->compute(detector, extractor);
 
 #ifndef NDEBUG
 	int frameCounter = 0;
@@ -148,14 +147,14 @@ int main(int argc, char **argv) {
 #endif
 	while(waitKey(100) < 0){
 		if (input == PIC) {
-			Mat lastImage = lastFrame.image;
+			Mat lastImage = lastFrame->image;
 			lastFrame = currentFrame;
-			currentFrame = OnaFrame(K, distCoeffs);
-			currentFrame.image = lastImage;
+			currentFrame = std::shared_ptr<OnaFrame>(new OnaFrame(K, distCoeffs));
+			currentFrame->image = lastImage;
 		} else if (input == VID || input == CAM) {
 			lastFrame = currentFrame;
-			currentFrame = OnaFrame(K, distCoeffs);
-			if (!cap.read(currentFrame.image)) {
+			currentFrame = std::shared_ptr<OnaFrame>(new OnaFrame(K, distCoeffs));
+			if (!cap.read(currentFrame->image)) {
 				std::cout << "end of stream" << std::endl;
 				break;
 			}
@@ -168,20 +167,12 @@ int main(int argc, char **argv) {
 #endif
 
 		// computing descriptors
-		currentFrame.compute(detector, extractor);
+		currentFrame->compute(detector, extractor);
 
 		// matching descriptors
-		matcher.match(lastFrame.descriptors, currentFrame.descriptors, matches);
+		currentFrame->match(lastFrame, matcher, maxDescriptorDistance);
 
-		// getting the matched points
-		vector<Point2f> lastPoints, currentPoints;
-		getMatchedPoints(lastPoints, currentPoints, lastFrame.keyPoints, currentFrame.keyPoints, matches, maxKeyPointDistance);
-
-		// undistort and put in normal coordinates
-		vector<Point2f> lastPointsNormal, currentPointsNormal;
-		undistortPoints(lastPoints, lastPointsNormal, lastFrame.cameraMatrix, lastFrame.distCoeffs);
-		undistortPoints(currentPoints, currentPointsNormal, currentFrame.cameraMatrix, currentFrame.distCoeffs);
-
+		/*
 		// find the essential matrix E
 		vector<uchar> inliers(lastPoints.size());
 		Mat E = findFundamentalMat(lastPointsNormal, currentPointsNormal, FM_RANSAC, ransacMaxDistance, ransacConfidence, inliers);
@@ -212,6 +203,7 @@ int main(int argc, char **argv) {
 		imshow("matches", img_matches);
 
 		out.write(img_matches);
+		*/
 	}
 
 	return 0;

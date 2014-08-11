@@ -11,11 +11,6 @@
  */
 class OnaFrame {
 	public:
-		cv::Mat image;
-		cv::Mat cameraMatrix;
-		std::vector<float> distCoeffs;
-		std::vector<cv::KeyPoint> keyPoints;
-		cv::Mat descriptors;
 
 		/**
 		 * \brief OnaFrame constructor.
@@ -24,7 +19,7 @@ class OnaFrame {
 		 * \param cameraMatrix The corresponding camera matirx.
 		 * \param distCoeffs The corresponding radial distortion coefficients.
 		 */
-		OnaFrame(int id, cv::Mat cameraMatrix, std::vector<float> distCoeffs);
+		OnaFrame(int id, const cv::Mat &image, const cv::Mat &cameraMatrix, const std::vector<float> &distCoeffs);
 
 		/**
 		 * \brief Gets the id of the OnaFrame
@@ -32,6 +27,13 @@ class OnaFrame {
 		 * \return The id.
 		 */
 		int getId() const;
+
+		/**
+		 * \brief Gets the image of the OnaFrame.
+		 *
+		 * \return The image.
+		 */
+		cv::Mat getImage() const;
 
 		/**
 		 * \brief Compute the keyPoints descriptors.
@@ -57,6 +59,11 @@ class OnaFrame {
 
 	protected:
 		int _id;
+		cv::Mat _image;
+		cv::Mat _cameraMatrix;
+		std::vector<float> _distCoeffs;
+		std::vector<cv::KeyPoint> _keyPoints;
+		cv::Mat _descriptors;
 
 		struct OnaMatch {
 			public:

@@ -79,8 +79,8 @@ int main(int argc, char **argv) {
 
 	int frameCounter = 0;
 
-	std::shared_ptr<OnaFrame> currentFrame(new OnaFrame(frameCounter, K, distCoeffs));
-	std::shared_ptr<OnaFrame> lastFrame(new OnaFrame(frameCounter - 1, K, distCoeffs));
+	std::shared_ptr<OnaFrame> currentFrame;
+	std::shared_ptr<OnaFrame> lastFrame;
 
 	VideoCapture cap;
 	input_t input;
@@ -104,18 +104,23 @@ int main(int argc, char **argv) {
 
 		outFps = cap.get(CV_CAP_PROP_FPS);
 
-		if(!cap.read(currentFrame->image)) return 1;
+		Mat image;
+		if(cap.read(image)) {
+			currentFrame = std::shared_ptr<OnaFrame>(new OnaFrame(frameCounter, image, K, distCoeffs));
+		} else {
+			return 1;
+		}
 	} else {
 		input = PIC;
 		std::cout << "stream not open" << std::endl;
 
-		lastFrame->image = imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE);
-		currentFrame->image = imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE);
+		lastFrame = std::shared_ptr<OnaFrame>(new OnaFrame(frameCounter - 1, imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
+		currentFrame = std::shared_ptr<OnaFrame>(new OnaFrame(frameCounter, imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
 	}
 
 	VideoWriter out;
 	if (!arguments.outputFile.empty()) {
-		out.open(arguments.outputFile, CV_FOURCC('H', '2', '6', '4'), outFps, currentFrame->image.size());
+		out.open(arguments.outputFile, CV_FOURCC('H', '2', '6', '4'), outFps, currentFrame->getImage().size());
 
 		if (out.isOpened()) {
 			std::cout << "writing to " << arguments.outputFile << std::endl;
@@ -149,20 +154,19 @@ int main(int argc, char **argv) {
 #ifndef NDEBUG
 		std::cout << "frame " << frameCounter << std::endl;
 #endif
+		Mat newImage;
 
 		if (input == PIC) {
-			Mat lastImage = lastFrame->image;
-			lastFrame = currentFrame;
-			currentFrame = std::shared_ptr<OnaFrame>(new OnaFrame(frameCounter, K, distCoeffs));
-			currentFrame->image = lastImage;
+			newImage = lastFrame->getImage();
 		} else if (input == VID || input == CAM) {
-			lastFrame = currentFrame;
-			currentFrame = std::shared_ptr<OnaFrame>(new OnaFrame(frameCounter, K, distCoeffs));
-			if (!cap.read(currentFrame->image)) {
+			if (!cap.read(newImage)) {
 				std::cout << "end of stream" << std::endl;
 				break;
 			}
 		}
+
+		lastFrame = currentFrame;
+		currentFrame = std::shared_ptr<OnaFrame>(new OnaFrame(frameCounter, newImage, K, distCoeffs));
 
 		//tFrameAcquired = clock();
 

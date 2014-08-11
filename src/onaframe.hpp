@@ -76,7 +76,8 @@ class OnaFrame {
 				std::vector<cv::Point2f> queryNormalisedPoints, trainNormalisedPoints;
 		};
 
-		std::vector<OnaMatch> frameMatches;
+		typedef std::map<int, OnaMatch> IdMatchMap;
+		IdMatchMap frameMatches;
 
 };
 #endif

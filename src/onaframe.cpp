@@ -46,7 +46,7 @@ bool OnaFrame::match(WPtr frameToMatchTo, DescriptorMatcher &matcher, float maxD
 		undistortPoints(queryPoints, onaMatch.queryNormalisedPoints, _cameraMatrix, _distCoeffs);
 		undistortPoints(trainPoints, onaMatch.trainNormalisedPoints, trainFrame->_cameraMatrix, trainFrame->_distCoeffs);
 
-		frameMatches.push_back(onaMatch);
+		frameMatches[trainFrame->getId()] = onaMatch;
 	} else {
 		return false;
 	}

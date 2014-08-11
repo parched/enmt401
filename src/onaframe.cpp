@@ -4,7 +4,7 @@
 
 using namespace cv;
 
-OnaFrame::OnaFrame(Mat cameraMatrix, std::vector<float> distCoeffs): cameraMatrix(cameraMatrix), distCoeffs(distCoeffs) {
+OnaFrame::OnaFrame(int id, Mat cameraMatrix, std::vector<float> distCoeffs): cameraMatrix(cameraMatrix), distCoeffs(distCoeffs), _id(id) {
 }
 
 bool OnaFrame::compute(FeatureDetector &detector, DescriptorExtractor &extractor) {
@@ -14,6 +14,10 @@ bool OnaFrame::compute(FeatureDetector &detector, DescriptorExtractor &extractor
 	extractor.compute(image, keyPoints, descriptors);
 
 	return true;
+}
+
+int OnaFrame::getId() const {
+	return _id;
 }
 
 bool OnaFrame::match(std::weak_ptr<OnaFrame> frameToMatchTo, DescriptorMatcher &matcher, float maxDistance) {

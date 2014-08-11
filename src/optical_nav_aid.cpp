@@ -77,8 +77,10 @@ int main(int argc, char **argv) {
 	Mat K(3, 3, CV_32F, tz40KData);
 	vector<float> distCoeffs;
 
-	std::shared_ptr<OnaFrame> currentFrame(new OnaFrame(K, distCoeffs));
-	std::shared_ptr<OnaFrame> lastFrame(new OnaFrame(K, distCoeffs));
+	int frameCounter = 0;
+
+	std::shared_ptr<OnaFrame> currentFrame(new OnaFrame(frameCounter, K, distCoeffs));
+	std::shared_ptr<OnaFrame> lastFrame(new OnaFrame(frameCounter - 1, K, distCoeffs));
 
 	VideoCapture cap;
 	input_t input;
@@ -137,23 +139,25 @@ int main(int argc, char **argv) {
 
 	currentFrame->compute(detector, extractor);
 
-#ifndef NDEBUG
-	int frameCounter = 0;
-#endif
 	//clock_t tFrameAcquired;
 
 #ifndef NDEBUG
 	std::cout << "Starting main loop." << std::endl;
 #endif
 	while(waitKey(100) < 0){
+		frameCounter++;
+#ifndef NDEBUG
+		std::cout << "frame " << frameCounter << std::endl;
+#endif
+
 		if (input == PIC) {
 			Mat lastImage = lastFrame->image;
 			lastFrame = currentFrame;
-			currentFrame = std::shared_ptr<OnaFrame>(new OnaFrame(K, distCoeffs));
+			currentFrame = std::shared_ptr<OnaFrame>(new OnaFrame(frameCounter, K, distCoeffs));
 			currentFrame->image = lastImage;
 		} else if (input == VID || input == CAM) {
 			lastFrame = currentFrame;
-			currentFrame = std::shared_ptr<OnaFrame>(new OnaFrame(K, distCoeffs));
+			currentFrame = std::shared_ptr<OnaFrame>(new OnaFrame(frameCounter, K, distCoeffs));
 			if (!cap.read(currentFrame->image)) {
 				std::cout << "end of stream" << std::endl;
 				break;
@@ -161,10 +165,6 @@ int main(int argc, char **argv) {
 		}
 
 		//tFrameAcquired = clock();
-#ifndef NDEBUG
-		frameCounter++;
-		std::cout << "frame " << frameCounter << std::endl;
-#endif
 
 		// computing descriptors
 		currentFrame->compute(detector, extractor);

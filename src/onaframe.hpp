@@ -20,10 +20,18 @@ class OnaFrame {
 		/**
 		 * \brief OnaFrame constructor.
 		 *
+		 * \param id The id of the frame which should be unique.
 		 * \param cameraMatrix The corresponding camera matirx.
 		 * \param distCoeffs The corresponding radial distortion coefficients.
 		 */
-		OnaFrame(cv::Mat cameraMatrix, std::vector<float> distCoeffs);
+		OnaFrame(int id, cv::Mat cameraMatrix, std::vector<float> distCoeffs);
+
+		/**
+		 * \brief Gets the id of the OnaFrame
+		 *
+		 * \return The id.
+		 */
+		int getId() const;
 
 		/**
 		 * \brief Compute the keyPoints descriptors.
@@ -48,6 +56,8 @@ class OnaFrame {
 
 
 	protected:
+		int _id;
+
 		struct OnaMatch {
 			public:
 				std::weak_ptr<OnaFrame> trainFrame;

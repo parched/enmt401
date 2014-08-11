@@ -114,6 +114,8 @@ int main(int argc, char **argv) {
 			std::cout << "!!! Output video could not be opened" << std::endl;
 			return 1;
 		}
+	} else {
+		std::cout << "Not writing output." << std::endl;
 	}
 
 	Mat img_matches;

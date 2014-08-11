@@ -143,6 +143,9 @@ int main(int argc, char **argv) {
 #endif
 	//clock_t tFrameAcquired;
 
+#ifndef NDEBUG
+	std::cout << "Starting main loop." << std::endl;
+#endif
 	while(waitKey(100) < 0){
 		if (input == PIC) {
 			Mat lastFrameAlso = lastFrame;

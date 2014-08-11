@@ -6,11 +6,15 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
+
 /**
  * \brief An optical navgiation aid frame.
  */
 class OnaFrame {
 	public:
+		typedef std::unique_ptr<OnaFrame> UPtr;
+		typedef std::shared_ptr<OnaFrame> SPtr;
+		typedef std::weak_ptr<OnaFrame> WPtr;
 
 		/**
 		 * \brief OnaFrame constructor.
@@ -54,7 +58,7 @@ class OnaFrame {
 		 *
 		 * \return Successfulness.
 		 */
-		bool match(std::weak_ptr<OnaFrame> frameToMatchTo, cv::DescriptorMatcher &matcher, float maxDistance);
+		bool match(WPtr frameToMatchTo, cv::DescriptorMatcher &matcher, float maxDistance);
 
 
 	protected:
@@ -67,7 +71,7 @@ class OnaFrame {
 
 		struct OnaMatch {
 			public:
-				std::weak_ptr<OnaFrame> trainFrame;
+				WPtr trainFrame;
 				std::vector<int> queryIdx, trainIdx;
 				std::vector<cv::Point2f> queryNormalisedPoints, trainNormalisedPoints;
 		};

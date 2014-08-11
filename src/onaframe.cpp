@@ -24,8 +24,8 @@ Mat OnaFrame::getImage() const {
 	return _image;
 }
 
-bool OnaFrame::match(std::weak_ptr<OnaFrame> frameToMatchTo, DescriptorMatcher &matcher, float maxDistance) {
-	if (std::shared_ptr<OnaFrame> trainFrame = frameToMatchTo.lock()) {
+bool OnaFrame::match(WPtr frameToMatchTo, DescriptorMatcher &matcher, float maxDistance) {
+	if (SPtr trainFrame = frameToMatchTo.lock()) {
 		OnaMatch onaMatch;
 		onaMatch.trainFrame = frameToMatchTo;
 

@@ -79,8 +79,8 @@ int main(int argc, char **argv) {
 
 	int frameCounter = 0;
 
-	std::shared_ptr<OnaFrame> currentFrame;
-	std::shared_ptr<OnaFrame> lastFrame;
+	OnaFrame::SPtr currentFrame;
+	OnaFrame::SPtr lastFrame;
 
 	VideoCapture cap;
 	input_t input;
@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
 
 		Mat image;
 		if(cap.read(image)) {
-			currentFrame = std::shared_ptr<OnaFrame>(new OnaFrame(frameCounter, image, K, distCoeffs));
+			currentFrame = OnaFrame::SPtr(new OnaFrame(frameCounter, image, K, distCoeffs));
 		} else {
 			return 1;
 		}
@@ -114,8 +114,8 @@ int main(int argc, char **argv) {
 		input = PIC;
 		std::cout << "stream not open" << std::endl;
 
-		lastFrame = std::shared_ptr<OnaFrame>(new OnaFrame(frameCounter - 1, imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
-		currentFrame = std::shared_ptr<OnaFrame>(new OnaFrame(frameCounter, imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
+		lastFrame = OnaFrame::SPtr(new OnaFrame(frameCounter - 1, imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
+		currentFrame = OnaFrame::SPtr(new OnaFrame(frameCounter, imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
 	}
 
 	VideoWriter out;
@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
 		}
 
 		lastFrame = currentFrame;
-		currentFrame = std::shared_ptr<OnaFrame>(new OnaFrame(frameCounter, newImage, K, distCoeffs));
+		currentFrame = OnaFrame::SPtr(new OnaFrame(frameCounter, newImage, K, distCoeffs));
 
 		//tFrameAcquired = clock();
 

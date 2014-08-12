@@ -96,13 +96,6 @@ class OnaFrame {
 		cv::Mat drawMatchedFlowFrom(int id);
 
 	protected:
-		int _id;
-		cv::Mat _image;
-		cv::Mat _cameraMatrix;
-		std::vector<float> _distCoeffs;
-		std::vector<cv::KeyPoint> _keyPoints;
-		cv::Mat _descriptors;
-
 		struct OnaMatch {
 			public:
 				WPtr trainFrame;
@@ -115,6 +108,13 @@ class OnaFrame {
 		};
 
 		typedef std::map<int, OnaMatch> IdMatchMap;
+
+		int _id;
+		cv::Mat _image;
+		cv::Mat _cameraMatrix;
+		std::vector<float> _distCoeffs;
+		std::vector<cv::KeyPoint> _keyPoints;
+		cv::Mat _descriptors;
 		IdMatchMap frameMatches;
 
 		/**

@@ -59,13 +59,14 @@ bool OnaFrame::match(WPtr frameToMatchTo, DescriptorMatcher &matcher, float maxD
 }
 
 Mat OnaFrame::findEssentialMatRansac(int id, double ransacMaxDistance, double ransacConfidence) {
+	Mat E;
 	OnaMatch *matchPtr = getMatchById(id);
 	if (matchPtr != nullptr) {
-		matchPtr->essential = findFundamentalMat(matchPtr->trainNormalisedPoints, matchPtr->queryNormalisedPoints, FM_RANSAC, ransacMaxDistance, ransacConfidence, matchPtr->inliers);
-		return matchPtr->essential;
+		setEssentialMatRansac(*matchPtr, ransacMaxDistance, ransacConfidence);
+		matchPtr->essential.copyTo(E);
 	}
 
-	return Mat();
+	return E;
 }
 
 OnaFrame::OnaMatch *OnaFrame::getMatchById(int id) {
@@ -80,6 +81,10 @@ OnaFrame::OnaMatch *OnaFrame::getMatchById(int id) {
 	}
 
 	return nullptr;
+}
+
+void OnaFrame::setEssentialMatRansac(OnaMatch &match, double ransacMaxDistance, double ransacConfidence) {
+	match.essential = findFundamentalMat(match.trainNormalisedPoints, match.queryNormalisedPoints, FM_RANSAC, ransacMaxDistance, ransacConfidence, match.inliers);
 }
 
 

@@ -100,5 +100,13 @@ class OnaFrame {
 		 */
 		OnaMatch *getMatchById(int id);
 
+		/**
+		 * \brief Sets the essential matrix from frame by id to this one.
+		 *
+		 * \param match The match to calculate and set in.
+		 * \param ransacMaxDistance The maximum permissible distance is pixels to epipolar line.
+		 * \param ransacConfidence The desired probability that the answer is correct.
+		 */
+		void setEssentialMatRansac(OnaMatch &match, double ransacMaxDistance, double ransacConfidence);
 };
 #endif

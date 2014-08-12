@@ -177,7 +177,7 @@ int main(int argc, char **argv) {
 		currentFrame->match(lastFrame, matcher, maxDescriptorDistance);
 
 		// find the essential matrix E
-		Mat E = currentFrame->findEssentialMatRansac(lastFrame->getId(), ransacMaxDistance, ransacConfidence);
+		Mat E(currentFrame->findEssentialMatRansac(lastFrame->getId(), ransacMaxDistance, ransacConfidence));
 
 		/*
 		// get the rotation

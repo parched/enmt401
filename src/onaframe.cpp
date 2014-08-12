@@ -33,7 +33,8 @@ Mat OnaFrame::getImage() const {
 
 bool OnaFrame::match(WPtr frameToMatchTo, DescriptorMatcher &matcher, float maxDistance) {
 	if (SPtr trainFrame = frameToMatchTo.lock()) {
-		OnaMatch onaMatch;
+		OnaMatch &onaMatch = frameMatches[trainFrame->_id];
+
 		onaMatch.trainFrame = frameToMatchTo;
 
 		std::vector<DMatch> matches;
@@ -51,8 +52,6 @@ bool OnaFrame::match(WPtr frameToMatchTo, DescriptorMatcher &matcher, float maxD
 		// undistort and put in normal coordinates
 		undistortPoints(onaMatch.queryPoints, onaMatch.queryNormalisedPoints, _cameraMatrix, _distCoeffs);
 		undistortPoints(onaMatch.trainPoints, onaMatch.trainNormalisedPoints, trainFrame->_cameraMatrix, trainFrame->_distCoeffs);
-
-		frameMatches[trainFrame->getId()] = onaMatch;
 	} else {
 		return false;
 	}

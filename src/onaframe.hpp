@@ -91,5 +91,14 @@ class OnaFrame {
 		typedef std::map<int, OnaMatch> IdMatchMap;
 		IdMatchMap frameMatches;
 
+		/**
+		 * \brief Gets the OnaMatch from the id.
+		 *
+		 * \param id The id.
+		 *
+		 * \return A pointer to the match, null_ptr if none.
+		 */
+		OnaMatch *getMatchById(int id);
+
 };
 #endif

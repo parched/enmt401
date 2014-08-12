@@ -59,17 +59,27 @@ bool OnaFrame::match(WPtr frameToMatchTo, DescriptorMatcher &matcher, float maxD
 }
 
 Mat OnaFrame::findEssentialMatRansac(int id, double ransacMaxDistance, double ransacConfidence) {
-	IdMatchMap::iterator frameMatchIt = frameMatches.find(id);
-
-	if (frameMatchIt != frameMatches.end()) {
-		OnaMatch *matchPtr = &(frameMatchIt->second);
+	OnaMatch *matchPtr = getMatchById(id);
+	if (matchPtr != nullptr) {
 		matchPtr->essential = findFundamentalMat(matchPtr->trainNormalisedPoints, matchPtr->queryNormalisedPoints, FM_RANSAC, ransacMaxDistance, ransacConfidence, matchPtr->inliers);
 		return matchPtr->essential;
-	} else {
-#ifndef NDEBUG
-		std::cout << "Match to frame with id: " << id << " not found" << std::endl;
-#endif
 	}
 
 	return Mat();
 }
+
+OnaFrame::OnaMatch *OnaFrame::getMatchById(int id) {
+	IdMatchMap::iterator frameMatchIt = frameMatches.find(id);
+
+	if (frameMatchIt != frameMatches.end()) {
+		return &(frameMatchIt->second);
+#ifndef NDEBUG
+	} else {
+		std::cout << "Match to frame with id: " << id << " not found" << std::endl;
+#endif
+	}
+
+	return nullptr;
+}
+
+

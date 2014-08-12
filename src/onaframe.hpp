@@ -16,6 +16,12 @@ class OnaFrame {
 		typedef std::shared_ptr<OnaFrame> SPtr;
 		typedef std::weak_ptr<OnaFrame> WPtr;
 
+		struct Pose {
+			public:
+				cv::Mat R;
+				cv::Mat t;
+		};
+
 		/**
 		 * \brief OnaFrame constructor.
 		 *
@@ -71,6 +77,15 @@ class OnaFrame {
 		 */
 		cv::Mat findEssentialMatRansac(int id, double ransacMaxDistance, double ransacConfidence);
 
+		/**
+		 * \brief Finds the pose difference w.r.t a frame.
+		 *
+		 * \param id The id of the frame to find the pose difference w.r.t.
+		 *
+		 * \return Pose transformation.
+		 */
+		Pose findPoseDiff(int id);
+
 	protected:
 		int _id;
 		cv::Mat _image;
@@ -86,6 +101,7 @@ class OnaFrame {
 				std::vector<cv::Point2f> queryNormalisedPoints, trainNormalisedPoints;
 				cv::Mat essential;
 				std::vector<uchar> inliers;
+				Pose poseDiff;
 		};
 
 		typedef std::map<int, OnaMatch> IdMatchMap;
@@ -108,5 +124,12 @@ class OnaFrame {
 		 * \param ransacConfidence The desired probability that the answer is correct.
 		 */
 		void setEssentialMatRansac(OnaMatch &match, double ransacMaxDistance, double ransacConfidence);
+
+		/**
+		 * \brief Sets the pose difference for a match.
+		 *
+		 * \param match The match to calculate the pose difference for.
+		 */
+		void setPoseDiff(OnaMatch &match);
 };
 #endif

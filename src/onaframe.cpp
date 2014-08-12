@@ -6,6 +6,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
+#include "pose.hpp"
+
 using namespace cv;
 
 OnaFrame::OnaFrame(int id, const Mat &image, const Mat &cameraMatrix, const std::vector<float> &distCoeffs): _id(id), _image(image), _cameraMatrix(cameraMatrix), _distCoeffs(distCoeffs) {
@@ -69,6 +71,17 @@ Mat OnaFrame::findEssentialMatRansac(int id, double ransacMaxDistance, double ra
 	return E;
 }
 
+OnaFrame::Pose OnaFrame::findPoseDiff(int id) {
+	Pose poseDiff;
+	OnaMatch *matchPtr = getMatchById(id);
+	if (matchPtr != nullptr) {
+		setPoseDiff(*matchPtr);
+		poseDiff =  matchPtr->poseDiff;
+	}
+
+	return poseDiff;
+}
+
 OnaFrame::OnaMatch *OnaFrame::getMatchById(int id) {
 	IdMatchMap::iterator frameMatchIt = frameMatches.find(id);
 
@@ -87,4 +100,6 @@ void OnaFrame::setEssentialMatRansac(OnaMatch &match, double ransacMaxDistance, 
 	match.essential = findFundamentalMat(match.trainNormalisedPoints, match.queryNormalisedPoints, FM_RANSAC, ransacMaxDistance, ransacConfidence, match.inliers);
 }
 
-
+void OnaFrame::setPoseDiff(OnaMatch &match) {
+	recoverPose(match.essential, match.trainNormalisedPoints, match.queryNormalisedPoints, match.poseDiff.R, match.poseDiff.t, noArray());
+}

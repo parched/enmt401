@@ -179,13 +179,11 @@ int main(int argc, char **argv) {
 		// find the essential matrix E
 		Mat E(currentFrame->findEssentialMatRansac(lastFrame->getId(), ransacMaxDistance, ransacConfidence));
 
-		/*
 		// get the rotation
-		Mat R, t, mask;
-		recoverPose(E, lastPointsNormal, currentPointsNormal, R, t, mask);
+		OnaFrame::Pose poseDiff(currentFrame->findPoseDiff(lastFrame->getId()));
 
 		// add to tally
-		totalR = totalR * R;
+		totalR = totalR * poseDiff.R;
 #ifndef NDEBUG
 		Vec3d eulerAngles;
 		getEulerAngles(totalR, eulerAngles);
@@ -193,9 +191,13 @@ int main(int argc, char **argv) {
 		poseInfo.setf(std::ios::fixed, std::ios::floatfield);
 		poseInfo.precision(2);
 		poseInfo << "Angle: " << std::setw(6) << eulerAngles(0) << std::setw(6) << eulerAngles(1) << std::setw(6) << eulerAngles(2);
-		poseInfo << "   Direction: " << std::setw(6) << t.at<double>(0) << std::setw(6) << t.at<double>(1) << std::setw(6) << t.at<double>(2);
+		poseInfo << "   Direction: " 
+			<< std::setw(6) << poseDiff.t.at<double>(0) 
+			<< std::setw(6) << poseDiff.t.at<double>(1) 
+			<< std::setw(6) << poseDiff.t.at<double>(2);
 		std::cout << poseInfo.str() << std::endl;
 #endif
+		/*
 		// drawing the results
 		namedWindow("matches", 1);
 		drawMatchedFlow(currentFrame.image, img_matches, lastPoints, currentPoints, inliers);

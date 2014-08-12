@@ -62,8 +62,8 @@ bool OnaFrame::match(WPtr frameToMatchTo, DescriptorMatcher &matcher, float maxD
 
 Mat OnaFrame::findEssentialMatRansac(int id, double ransacMaxDistance, double ransacConfidence) {
 	Mat E;
-	OnaMatch *matchPtr = getMatchById(id);
-	if (matchPtr != nullptr) {
+
+	if (OnaMatch *matchPtr = getMatchById(id)) {
 		setEssentialMatRansac(*matchPtr, ransacMaxDistance, ransacConfidence);
 		matchPtr->essential.copyTo(E);
 	}
@@ -73,8 +73,8 @@ Mat OnaFrame::findEssentialMatRansac(int id, double ransacMaxDistance, double ra
 
 OnaFrame::Pose OnaFrame::findPoseDiff(int id) {
 	Pose poseDiff;
-	OnaMatch *matchPtr = getMatchById(id);
-	if (matchPtr != nullptr) {
+
+	if (OnaMatch *matchPtr = getMatchById(id)) {
 		setPoseDiff(*matchPtr);
 		poseDiff =  matchPtr->poseDiff;
 	}

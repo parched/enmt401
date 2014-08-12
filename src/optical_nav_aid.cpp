@@ -196,12 +196,12 @@ int main(int argc, char **argv) {
 		std::cout << poseInfo.str() << std::endl;
 #endif
 		// drawing the results
-		namedWindow("matches", 1);
 		Mat imgMatches(currentFrame->drawMatchedFlowFrom(lastFrame->getId()));
 #ifndef NDEBUG
 		putText(imgMatches, poseInfo.str(), Point(15, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0xf7, 0x2e, 0xfe));
 #endif
 
+		namedWindow("matches", 1);
 		imshow("matches", imgMatches);
 
 		out.write(imgMatches);

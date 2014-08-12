@@ -86,6 +86,15 @@ class OnaFrame {
 		 */
 		Pose findPoseDiff(int id);
 
+		/**
+		 * \brief Draws the matched flow from a frame.
+		 *
+		 * \param id The id of the frame to draw the flow from.
+		 *
+		 * \return The image with the flow on it.
+		 */
+		cv::Mat drawMatchedFlowFrom(int id);
+
 	protected:
 		int _id;
 		cv::Mat _image;
@@ -98,6 +107,7 @@ class OnaFrame {
 			public:
 				WPtr trainFrame;
 				std::vector<int> queryIdx, trainIdx;
+				std::vector<cv::Point2f> queryPoints, trainPoints;
 				std::vector<cv::Point2f> queryNormalisedPoints, trainNormalisedPoints;
 				cv::Mat essential;
 				std::vector<uchar> inliers;

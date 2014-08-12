@@ -7,6 +7,7 @@
 #include <opencv2/calib3d/calib3d.hpp>
 
 #include "pose.hpp"
+#include "matches.hpp"
 
 using namespace cv;
 
@@ -38,19 +39,18 @@ bool OnaFrame::match(WPtr frameToMatchTo, DescriptorMatcher &matcher, float maxD
 		std::vector<DMatch> matches;
 		matcher.match(_descriptors, trainFrame->_descriptors, matches);
 
-		vector<Point2f> queryPoints, trainPoints;
 		for (const DMatch &match : matches) {
 			if (maxDistance == 0 || match.distance <= maxDistance) {
-				queryPoints.push_back(_keyPoints[match.queryIdx].pt);
-				trainPoints.push_back(trainFrame->_keyPoints[match.trainIdx].pt);
+				onaMatch.queryPoints.push_back(_keyPoints[match.queryIdx].pt);
+				onaMatch.trainPoints.push_back(trainFrame->_keyPoints[match.trainIdx].pt);
 				onaMatch.queryIdx.push_back(match.queryIdx);
 				onaMatch.trainIdx.push_back(match.trainIdx);
 			}
 		}
 
 		// undistort and put in normal coordinates
-		undistortPoints(queryPoints, onaMatch.queryNormalisedPoints, _cameraMatrix, _distCoeffs);
-		undistortPoints(trainPoints, onaMatch.trainNormalisedPoints, trainFrame->_cameraMatrix, trainFrame->_distCoeffs);
+		undistortPoints(onaMatch.queryPoints, onaMatch.queryNormalisedPoints, _cameraMatrix, _distCoeffs);
+		undistortPoints(onaMatch.trainPoints, onaMatch.trainNormalisedPoints, trainFrame->_cameraMatrix, trainFrame->_distCoeffs);
 
 		frameMatches[trainFrame->getId()] = onaMatch;
 	} else {
@@ -80,6 +80,16 @@ OnaFrame::Pose OnaFrame::findPoseDiff(int id) {
 	}
 
 	return poseDiff;
+}
+
+Mat OnaFrame::drawMatchedFlowFrom(int id) {
+	Mat image;
+
+	if (OnaMatch *matchPtr = getMatchById(id)) {
+		drawMatchedFlow(_image, image, matchPtr->trainPoints, matchPtr->queryPoints, matchPtr->inliers);
+	}
+
+	return image;
 }
 
 OnaFrame::OnaMatch *OnaFrame::getMatchById(int id) {

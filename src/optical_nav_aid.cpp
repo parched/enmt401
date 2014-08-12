@@ -132,8 +132,6 @@ int main(int argc, char **argv) {
 		std::cout << "Not writing output." << std::endl;
 	}
 
-	Mat img_matches;
-
 	Mat totalR = Mat::eye(3, 3, CV_64F);
 
 	SurfFeatureDetector detector(400);
@@ -197,18 +195,16 @@ int main(int argc, char **argv) {
 			<< std::setw(6) << poseDiff.t.at<double>(2);
 		std::cout << poseInfo.str() << std::endl;
 #endif
-		/*
 		// drawing the results
 		namedWindow("matches", 1);
-		drawMatchedFlow(currentFrame.image, img_matches, lastPoints, currentPoints, inliers);
+		Mat imgMatches(currentFrame->drawMatchedFlowFrom(lastFrame->getId()));
 #ifndef NDEBUG
-		putText(img_matches, poseInfo.str(), Point(15, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0xf7, 0x2e, 0xfe));
+		putText(imgMatches, poseInfo.str(), Point(15, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0xf7, 0x2e, 0xfe));
 #endif
 
-		imshow("matches", img_matches);
+		imshow("matches", imgMatches);
 
-		out.write(img_matches);
-		*/
+		out.write(imgMatches);
 	}
 
 	return 0;

@@ -108,6 +108,7 @@ int main(int argc, char **argv) {
 		if(cap.read(image)) {
 			currentFrame = OnaFrame::SPtr(new OnaFrame(frameCounter, image, K, distCoeffs));
 		} else {
+			std::cerr << "Could not read an image from capture" << std::endl;
 			return 1;
 		}
 	} else {

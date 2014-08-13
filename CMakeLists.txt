@@ -17,5 +17,8 @@ target_link_libraries(matcher-simple ${OpenCV_LIBS})
 add_executable(test-cam src/test_cam.cpp)
 target_link_libraries(test-cam ${OpenCV_LIBS})
 
+add_executable(calibrate src/calibration.cpp)
+target_link_libraries(calibrate ${OpenCV_LIBS})
+
 add_executable(optical-nav-aid src/optical_nav_aid.cpp src/matches.cpp src/pose.cpp src/onaframe.cpp)
 target_link_libraries(optical-nav-aid ${OpenCV_LIBS})

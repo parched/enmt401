@@ -181,31 +181,33 @@ int main(int argc, char **argv) {
 		// get the rotation
 		OnaFrame::Pose poseDiff(currentFrame->findPoseDiff(lastFrame->getId()));
 
-		// add to tally
-		totalR = totalR * poseDiff.R;
+		if (!poseDiff.R.empty()) {
+			// add to tally
+			totalR = totalR * poseDiff.R;
 #ifndef NDEBUG
-		Vec3d eulerAngles;
-		getEulerAngles(totalR, eulerAngles);
-		std::stringstream poseInfo;
-		poseInfo.setf(std::ios::fixed, std::ios::floatfield);
-		poseInfo.precision(2);
-		poseInfo << "Angle: " << std::setw(6) << eulerAngles(0) << std::setw(6) << eulerAngles(1) << std::setw(6) << eulerAngles(2);
-		poseInfo << "   Direction: " 
-			<< std::setw(6) << poseDiff.t.at<double>(0) 
-			<< std::setw(6) << poseDiff.t.at<double>(1) 
-			<< std::setw(6) << poseDiff.t.at<double>(2);
-		std::cout << poseInfo.str() << std::endl;
+			Vec3d eulerAngles;
+			getEulerAngles(totalR, eulerAngles);
+			std::stringstream poseInfo;
+			poseInfo.setf(std::ios::fixed, std::ios::floatfield);
+			poseInfo.precision(2);
+			poseInfo << "Angle: " << std::setw(6) << eulerAngles(0) << std::setw(6) << eulerAngles(1) << std::setw(6) << eulerAngles(2);
+			poseInfo << "   Direction: " 
+				<< std::setw(6) << poseDiff.t.at<double>(0) 
+				<< std::setw(6) << poseDiff.t.at<double>(1) 
+				<< std::setw(6) << poseDiff.t.at<double>(2);
+			std::cout << poseInfo.str() << std::endl;
 #endif
-		// drawing the results
-		Mat imgMatches(currentFrame->drawMatchedFlowFrom(lastFrame->getId()));
+			// drawing the results
+			Mat imgMatches(currentFrame->drawMatchedFlowFrom(lastFrame->getId()));
 #ifndef NDEBUG
-		putText(imgMatches, poseInfo.str(), Point(15, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0xf7, 0x2e, 0xfe));
+			putText(imgMatches, poseInfo.str(), Point(15, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0xf7, 0x2e, 0xfe));
 #endif
 
-		namedWindow("matches", 1);
-		imshow("matches", imgMatches);
+			namedWindow("matches", 1);
+			imshow("matches", imgMatches);
 
-		out.write(imgMatches);
+			out.write(imgMatches);
+		}
 	}
 
 	return 0;

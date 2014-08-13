@@ -38,20 +38,24 @@ bool OnaFrame::match(WPtr frameToMatchTo, DescriptorMatcher &matcher, float maxD
 		onaMatch.trainFrame = frameToMatchTo;
 
 		std::vector<DMatch> matches;
-		matcher.match(_descriptors, trainFrame->_descriptors, matches);
+		if (!_descriptors.empty() && !trainFrame->_descriptors.empty()) {
+			matcher.match(_descriptors, trainFrame->_descriptors, matches);
 
-		for (const DMatch &match : matches) {
-			if (maxDistance == 0 || match.distance <= maxDistance) {
-				onaMatch.queryPoints.push_back(_keyPoints[match.queryIdx].pt);
-				onaMatch.trainPoints.push_back(trainFrame->_keyPoints[match.trainIdx].pt);
-				onaMatch.queryIdx.push_back(match.queryIdx);
-				onaMatch.trainIdx.push_back(match.trainIdx);
+			for (const DMatch &match : matches) {
+				if (maxDistance == 0 || match.distance <= maxDistance) {
+					onaMatch.queryPoints.push_back(_keyPoints[match.queryIdx].pt);
+					onaMatch.trainPoints.push_back(trainFrame->_keyPoints[match.trainIdx].pt);
+					onaMatch.queryIdx.push_back(match.queryIdx);
+					onaMatch.trainIdx.push_back(match.trainIdx);
+				}
+			}
+
+			if (onaMatch.queryPoints.size() > 0) {
+				// undistort and put in normal coordinates
+				undistortPoints(onaMatch.queryPoints, onaMatch.queryNormalisedPoints, _cameraMatrix, _distCoeffs);
+				undistortPoints(onaMatch.trainPoints, onaMatch.trainNormalisedPoints, trainFrame->_cameraMatrix, trainFrame->_distCoeffs);
 			}
 		}
-
-		// undistort and put in normal coordinates
-		undistortPoints(onaMatch.queryPoints, onaMatch.queryNormalisedPoints, _cameraMatrix, _distCoeffs);
-		undistortPoints(onaMatch.trainPoints, onaMatch.trainNormalisedPoints, trainFrame->_cameraMatrix, trainFrame->_distCoeffs);
 	} else {
 		return false;
 	}
@@ -106,9 +110,13 @@ OnaFrame::OnaMatch *OnaFrame::getMatchById(int id) {
 }
 
 void OnaFrame::setEssentialMatRansac(OnaMatch &match, double ransacMaxDistance, double ransacConfidence) {
-	match.essential = findFundamentalMat(match.trainNormalisedPoints, match.queryNormalisedPoints, FM_RANSAC, ransacMaxDistance, ransacConfidence, match.inliers);
+	if (match.queryNormalisedPoints.size() > 0) {
+		match.essential = findFundamentalMat(match.trainNormalisedPoints, match.queryNormalisedPoints, FM_RANSAC, ransacMaxDistance, ransacConfidence, match.inliers);
+	}
 }
 
 void OnaFrame::setPoseDiff(OnaMatch &match) {
-	recoverPose(match.essential, match.trainNormalisedPoints, match.queryNormalisedPoints, match.poseDiff.R, match.poseDiff.t, noArray());
+	if (match.queryNormalisedPoints.size() > 0) {
+		recoverPose(match.essential, match.trainNormalisedPoints, match.queryNormalisedPoints, match.poseDiff.R, match.poseDiff.t, noArray());
+	}
 }

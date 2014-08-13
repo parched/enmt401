@@ -39,6 +39,8 @@ namespace {
 	const double ransacConfidence = 0.99;
 
 	float tz40KData[] = {520., 0., 320., 0., 520., 240., 0., 0., 1.};
+	float fireflyData[] = {1.3840577621390364e+03, 0., 3.0934395664809961e+02, 0., 1.3834780739724592e+03, 2.4440820692178860e+02, 0., 0., 1.};
+	vector<float> fireflyDistCoeffs { -2.8638478534592271e-01, -7.1981969625655881e-02, -3.2364565871468563e-03, 1.5622879005666110e-03, 4.9534384707813928e+00};
 }
 
 struct arguments {
@@ -74,7 +76,7 @@ int main(int argc, char **argv) {
 	argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
 	// the camera matrix and distortion coeffs
-	Mat K(3, 3, CV_32F, tz40KData);
+	Mat K = Mat::eye(3, 3, CV_32F);
 	vector<float> distCoeffs;
 
 	int frameCounter = 0;
@@ -93,10 +95,15 @@ int main(int argc, char **argv) {
 	std::stringstream inputConvert(inputFile);
 	if (inputConvert >> cameraIndex) {
 		input = CAM;
+		std::cout << "Input from camera " << arguments.inputFile << std::endl;
 		cap.open(cameraIndex);
+		K = Mat(3, 3, CV_32F, tz40KData);
 	} else {
 		input = VID;
+		std::cout << "Input from file " << arguments.inputFile << std::endl;
 		cap.open(inputFile);
+		K = Mat(3, 3, CV_32F, fireflyData);
+		distCoeffs = fireflyDistCoeffs;
 	}
 
 	if (cap.isOpened()) {

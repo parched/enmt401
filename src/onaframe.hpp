@@ -58,13 +58,12 @@ class OnaFrame {
 		/**
 		 * \brief Match descriptors to another frame.
 		 *
+		 * \param frameToMatchFrom The query frame to match to.
 		 * \param frameToMatchTo The train frame to match to.
 		 * \param matcher The DescriptorMatcher to use.
 		 * \param maxDistance The maximum allowable description distance to allow.
-		 *
-		 * \return Successfulness.
 		 */
-		bool match(WPtr frameToMatchTo, cv::DescriptorMatcher &matcher, float maxDistance);
+		static void match(SPtr frameToMatchFrom, SPtr frameToMatchTo, cv::DescriptorMatcher &matcher, float maxDistance);
 
 		/**
 		 * \brief Find the essential matrix from frame by id to this one.
@@ -98,6 +97,7 @@ class OnaFrame {
 	protected:
 		struct OnaMatch {
 			public:
+				WPtr queryFrame;
 				WPtr trainFrame;
 				std::vector<int> queryIdx, trainIdx;
 				std::vector<cv::Point2f> queryPoints, trainPoints;

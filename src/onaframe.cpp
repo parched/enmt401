@@ -31,36 +31,31 @@ Mat OnaFrame::getImage() const {
 	return _image;
 }
 
-bool OnaFrame::match(WPtr frameToMatchTo, DescriptorMatcher &matcher, float maxDistance) {
-	if (SPtr trainFrame = frameToMatchTo.lock()) {
-		OnaMatch &onaMatch = frameMatches[trainFrame->_id];
+void OnaFrame::match(SPtr queryFrame, SPtr trainFrame, DescriptorMatcher &matcher, float maxDistance) {
+	OnaMatch &onaMatch = queryFrame->frameMatches[trainFrame->_id];
 
-		onaMatch.trainFrame = frameToMatchTo;
+	onaMatch.queryFrame = queryFrame;
+	onaMatch.trainFrame = trainFrame;
 
-		std::vector<DMatch> matches;
-		if (!_descriptors.empty() && !trainFrame->_descriptors.empty()) {
-			matcher.match(_descriptors, trainFrame->_descriptors, matches);
+	std::vector<DMatch> matches;
+	if (!queryFrame->_descriptors.empty() && !trainFrame->_descriptors.empty()) {
+		matcher.match(queryFrame->_descriptors, trainFrame->_descriptors, matches);
 
-			for (const DMatch &match : matches) {
-				if (maxDistance == 0 || match.distance <= maxDistance) {
-					onaMatch.queryPoints.push_back(_keyPoints[match.queryIdx].pt);
-					onaMatch.trainPoints.push_back(trainFrame->_keyPoints[match.trainIdx].pt);
-					onaMatch.queryIdx.push_back(match.queryIdx);
-					onaMatch.trainIdx.push_back(match.trainIdx);
-				}
-			}
-
-			if (onaMatch.queryPoints.size() > 0) {
-				// undistort and put in normal coordinates
-				undistortPoints(onaMatch.queryPoints, onaMatch.queryNormalisedPoints, _cameraMatrix, _distCoeffs);
-				undistortPoints(onaMatch.trainPoints, onaMatch.trainNormalisedPoints, trainFrame->_cameraMatrix, trainFrame->_distCoeffs);
+		for (const DMatch &match : matches) {
+			if (maxDistance == 0 || match.distance <= maxDistance) {
+				onaMatch.queryPoints.push_back(queryFrame->_keyPoints[match.queryIdx].pt);
+				onaMatch.trainPoints.push_back(trainFrame->_keyPoints[match.trainIdx].pt);
+				onaMatch.queryIdx.push_back(match.queryIdx);
+				onaMatch.trainIdx.push_back(match.trainIdx);
 			}
 		}
-	} else {
-		return false;
-	}
 
-	return true;
+		if (onaMatch.queryPoints.size() > 0) {
+			// undistort and put in normal coordinates
+			undistortPoints(onaMatch.queryPoints, onaMatch.queryNormalisedPoints, queryFrame->_cameraMatrix, queryFrame->_distCoeffs);
+			undistortPoints(onaMatch.trainPoints, onaMatch.trainNormalisedPoints, trainFrame->_cameraMatrix, trainFrame->_distCoeffs);
+		}
+	}
 }
 
 Mat OnaFrame::findEssentialMatRansac(int id, double ransacMaxDistance, double ransacConfidence) {

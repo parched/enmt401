@@ -180,7 +180,7 @@ int main(int argc, char **argv) {
 		currentFrame->compute(detector, extractor);
 
 		// matching descriptors
-		currentFrame->match(lastFrame, matcher, maxDescriptorDistance);
+		OnaFrame::match(currentFrame, lastFrame, matcher, maxDescriptorDistance);
 
 		// find the essential matrix E
 		Mat E(currentFrame->findEssentialMatRansac(lastFrame->getId(), ransacMaxDistance, ransacConfidence));

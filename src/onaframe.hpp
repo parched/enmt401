@@ -1,3 +1,29 @@
+/**
+ * \file onaframe.hpp
+ * \brief An optical navigation aid frame class header.
+ * \author James Duley
+ * \version 1.0
+ * \date 2014-08-26
+ */
+
+/* Copyright (C) 
+ * 2014 - James Duley
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ */
+
 #ifndef ONAFRAME_HPP
 #define ONAFRAME_HPP
 
@@ -12,14 +38,16 @@
  */
 class OnaFrame {
 	public:
-		typedef std::unique_ptr<OnaFrame> UPtr;
-		typedef std::shared_ptr<OnaFrame> SPtr;
-		typedef std::weak_ptr<OnaFrame> WPtr;
+		typedef std::unique_ptr<OnaFrame> UPtr; /**< A unique pointer to an OnaFrame */
+		typedef std::shared_ptr<OnaFrame> SPtr; /**< A shared pointer to an OnaFrame */
+		typedef std::weak_ptr<OnaFrame> WPtr; /**< A weak pointer to an OnaFrame */
 
+		/**
+		 * \brief A pose transformation.
+		 */
 		struct Pose {
-			public:
-				cv::Mat R;
-				cv::Mat t;
+			cv::Mat R; /**< Rotation. */
+			cv::Mat t; /**< Translation. */
 		};
 
 		/**
@@ -95,23 +123,26 @@ class OnaFrame {
 		cv::Mat drawMatchedFlowFrom(int id);
 
 	protected:
+		/**
+		 * \brief A match between frames.
+		 */
 		struct OnaMatch;
 
-		typedef std::unique_ptr<OnaMatch> MatchUPtr;
-		typedef std::shared_ptr<OnaMatch> MatchSPtr;
-		typedef std::weak_ptr<OnaMatch> MatchWPtr;
+		typedef std::unique_ptr<OnaMatch> MatchUPtr; /**< A unique pointer to an OnaMatch */
+		typedef std::shared_ptr<OnaMatch> MatchSPtr; /**< A shared pointer to an OnaMatch */
+		typedef std::weak_ptr<OnaMatch> MatchWPtr; /**< A weak pointer to an OnaMatch */
 
-		typedef std::map<int, MatchSPtr> IdMatchMapFrom;
-		typedef std::map<int, MatchWPtr> IdMatchMapTo;
+		typedef std::map<int, MatchSPtr> IdMatchMapFrom; /**< Map containing matches from a frame. */
+		typedef std::map<int, MatchWPtr> IdMatchMapTo; /**< Map containing matches to a frame. */
 
-		int _id;
-		cv::Mat _image;
-		cv::Mat _cameraMatrix;
-		std::vector<float> _distCoeffs;
-		std::vector<cv::KeyPoint> _keyPoints;
-		cv::Mat _descriptors;
-		IdMatchMapFrom _frameMatchesFrom;
-		IdMatchMapTo _frameMatchesTo;
+		int _id; /**< ID. */
+		cv::Mat _image; /**< Image. */
+		cv::Mat _cameraMatrix; /**< Camera matrix. */
+		std::vector<float> _distCoeffs; /**< Radial distortion coefficients. */
+		std::vector<cv::KeyPoint> _keyPoints; /**< Key points. */
+		cv::Mat _descriptors; /**< Corresponding key point descriptors. */
+		IdMatchMapFrom _frameMatchesFrom; /**< Matches to other frames. */
+		IdMatchMapTo _frameMatchesTo; /**< Matches to this frame. */
 
 		/**
 		 * \brief Gets the OnaMatch from the id.

@@ -221,7 +221,7 @@ int main(int argc, char **argv) {
 			std::stringstream poseInfo;
 			poseInfo.setf(std::ios::fixed, std::ios::floatfield);
 			poseInfo.precision(2);
-			poseInfo << "Angle: " << std::setw(6) << eulerAngles(0) << std::setw(6) << eulerAngles(1) << std::setw(6) << eulerAngles(2);
+			poseInfo << "Angle: " << std::setw(8) << eulerAngles(0) << std::setw(8) << eulerAngles(1) << std::setw(8) << eulerAngles(2);
 			poseInfo << "   Direction: " 
 				<< std::setw(6) << poseDiff.t.at<double>(0) 
 				<< std::setw(6) << poseDiff.t.at<double>(1) 

@@ -41,7 +41,7 @@ bool checkCoherentRotation(const cv::Mat_<double> &R);
  * \brief Print the Euler angles of a rotation matrix.
  *
  * \param R The rotation matrix.
- * \param angles The Euler angles.
+ * \param angles The Euler angles in degrees.
  */
 void getEulerAngles(const cv::Mat_<double> &R, cv::Vec3d &angles);
 

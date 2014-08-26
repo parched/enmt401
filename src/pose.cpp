@@ -36,9 +36,9 @@ bool checkCoherentRotation(const Mat_<double> &R) {
 }
 
 void getEulerAngles(const Mat_<double> &R, Vec3d &angles) {
-	angles(0)  = std::atan2(R(2, 1), R(2, 2));
-	angles(1)  = std::atan2(-R(2, 0), sqrt(R(2, 1) * R(2, 1) + R(2, 2) * R(2, 2)));
-	angles(2)  = std::atan2(R(1, 0), R(0, 0));
+	angles(0)  = std::atan2(R(2, 1), R(2, 2)) * 180.0 / CV_PI;
+	angles(1)  = std::atan2(-R(2, 0), sqrt(R(2, 1) * R(2, 1) + R(2, 2) * R(2, 2))) * 180.0 / CV_PI;
+	angles(2)  = std::atan2(R(1, 0), R(0, 0)) * 180.0 / CV_PI;
 }
 
 /*-----from opencv 3 five-point.cpp------------------------------*/

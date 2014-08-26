@@ -51,15 +51,16 @@ void getEulerAngles(const cv::Mat_<double> &R, cv::Vec3d &angles);
  * \brief Recovers the pose froman essential matrix
  *
  * \param E The essential matrix.
- * \param _points1 The first set of points used for E.
- * \param _points2 The second set of points used for E.
- * \param _R The rotation.
- * \param _t The translation with unit magnitude.
- * \param _mask Inliers.
+ * \param points1 The first set of points used for E.
+ * \param points2 The second set of points used for E.
+ * \param R The rotation.
+ * \param t The translation with unit magnitude.
+ * \param mask Inliers.
  *
  * \return 
  */
-int recoverPose( const cv::Mat &E, cv::InputArray _points1, cv::InputArray _points2, cv::Mat &_R,
-                     cv::Mat &_t, cv::InputOutputArray _mask);
+int recoverPose( cv::InputArray E, cv::InputArray points1, cv::InputArray points2,
+                            cv::OutputArray R, cv::OutputArray t,
+                            cv::InputOutputArray mask = cv::noArray() );
 
 #endif

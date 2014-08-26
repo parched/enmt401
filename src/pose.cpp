@@ -42,8 +42,9 @@ void getEulerAngles(const Mat_<double> &R, Vec3d &angles) {
 }
 
 /*-----from opencv 3 five-point.cpp------------------------------*/
-void decomposeEssentialMat( const Mat &E, Mat &R1, Mat &R2, Mat &t )
+void decomposeEssentialMat( InputArray _E, OutputArray _R1, OutputArray _R2, OutputArray _t )
 {
+    Mat E = _E.getMat().reshape(1, 3);
     CV_Assert(E.cols == 3 && E.rows == 3);
 
     Mat D, U, Vt;
@@ -55,14 +56,18 @@ void decomposeEssentialMat( const Mat &E, Mat &R1, Mat &R2, Mat &t )
     Mat W = (Mat_<double>(3, 3) << 0, 1, 0, -1, 0, 0, 0, 0, 1);
     W.convertTo(W, E.type());
 
+    Mat R1, R2, t;
     R1 = U * W * Vt;
     R2 = U * W.t() * Vt;
     t = U.col(2) * 1.0;
 
+    R1.copyTo(_R1);
+    R2.copyTo(_R2);
+    t.copyTo(_t);
 }
 
-int recoverPose( const Mat &E, InputArray _points1, InputArray _points2, Mat &_R,
-                     Mat &_t, InputOutputArray _mask)
+int recoverPose( InputArray E, InputArray _points1, InputArray _points2, OutputArray _R,
+                     OutputArray _t, InputOutputArray _mask)
 {
     Mat points1, points2;
     _points1.getMat().copyTo(points1);
@@ -162,6 +167,7 @@ int recoverPose( const Mat &E, InputArray _points1, InputArray _points2, Mat &_R
         _mask.create(mask1.size(), CV_8U);
     }
 
+    CV_Assert(_R.needed() && _t.needed());
     _R.create(3, 3, R1.type());
     _t.create(3, 1, t.type());
 

@@ -150,6 +150,13 @@ void OnaFrame::setEssentialMatRansac(OnaMatch &match, double ransacMaxDistance, 
 
 void OnaFrame::setPoseDiff(OnaMatch &match) {
 	if (match.queryNormalisedPoints.size() > 0) {
-		recoverPose(match.essential, match.trainNormalisedPoints, match.queryNormalisedPoints, match.poseDiff.R, match.poseDiff.t, match.inliers);
+#ifndef NDEBUG
+		std::cout << "Nubmer of good triangulation points: " <<
+#endif
+		recoverPose(match.essential, match.trainNormalisedPoints, match.queryNormalisedPoints, match.poseDiff.R, match.poseDiff.t, match.inliers)
+#ifndef NDEBUG
+		<< std::endl
+#endif
+			;
 	}
 }

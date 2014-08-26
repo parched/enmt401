@@ -67,7 +67,7 @@ void decomposeEssentialMat( InputArray _E, OutputArray _R1, OutputArray _R2, Out
 }
 
 int recoverPose( InputArray E, InputArray _points1, InputArray _points2, OutputArray _R,
-                     OutputArray _t, InputOutputArray _mask)
+                     OutputArray _t, OutputArray _U, InputOutputArray _mask)
 {
     Mat points1, points2;
     _points1.getMat().copyTo(points1);
@@ -184,6 +184,7 @@ int recoverPose( InputArray E, InputArray _points1, InputArray _points2, OutputA
     {
         R1.copyTo(_R);
         t.copyTo(_t);
+	if (_U.needed()) U1.copyTo(_U);
         if (_mask.needed()) mask1.copyTo(_mask);
         return good1;
     }
@@ -191,6 +192,7 @@ int recoverPose( InputArray E, InputArray _points1, InputArray _points2, OutputA
     {
         R2.copyTo(_R);
         t.copyTo(_t);
+	if (_U.needed()) U2.copyTo(_U);
         if (_mask.needed()) mask2.copyTo(_mask);
         return good2;
     }
@@ -199,6 +201,7 @@ int recoverPose( InputArray E, InputArray _points1, InputArray _points2, OutputA
         t = -t;
         R1.copyTo(_R);
         t.copyTo(_t);
+	if (_U.needed()) U3.copyTo(_U);
         if (_mask.needed()) mask3.copyTo(_mask);
         return good3;
     }
@@ -207,6 +210,7 @@ int recoverPose( InputArray E, InputArray _points1, InputArray _points2, OutputA
         t = -t;
         R2.copyTo(_R);
         t.copyTo(_t);
+	if (_U.needed()) U4.copyTo(_U);
         if (_mask.needed()) mask4.copyTo(_mask);
         return good4;
     }

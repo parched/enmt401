@@ -45,6 +45,7 @@ struct OnaFrame::OnaMatch {
 	cv::Mat essential;
 	std::vector<uchar> inliers;
 	Pose poseDiff;
+	cv::Mat points3D;
 };
 
 OnaFrame::OnaFrame(int id, const Mat &image, const Mat &cameraMatrix, const std::vector<float> &distCoeffs): _id(id), _image(image), _cameraMatrix(cameraMatrix), _distCoeffs(distCoeffs) {
@@ -153,7 +154,7 @@ void OnaFrame::setPoseDiff(OnaMatch &match) {
 #ifndef NDEBUG
 		std::cout << "Nubmer of good triangulation points: " <<
 #endif
-		recoverPose(match.essential, match.trainNormalisedPoints, match.queryNormalisedPoints, match.poseDiff.R, match.poseDiff.t, match.inliers)
+		recoverPose(match.essential, match.trainNormalisedPoints, match.queryNormalisedPoints, match.poseDiff.R, match.poseDiff.t, match.points3D, match.inliers)
 #ifndef NDEBUG
 		<< std::endl
 #endif

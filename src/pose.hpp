@@ -55,12 +55,14 @@ void getEulerAngles(const cv::Mat_<double> &R, cv::Vec3d &angles);
  * \param points2 The second set of points used for E.
  * \param R The rotation.
  * \param t The translation with unit magnitude.
+ * \param U The triangulated points in homogenous coordinates scaled with the translation.
  * \param mask Inliers.
  *
  * \return 
  */
 int recoverPose( cv::InputArray E, cv::InputArray points1, cv::InputArray points2,
                             cv::OutputArray R, cv::OutputArray t,
+			    cv::OutputArray U,
                             cv::InputOutputArray mask = cv::noArray() );
 
 #endif

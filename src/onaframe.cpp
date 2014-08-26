@@ -11,6 +11,20 @@
 
 using namespace cv;
 
+/**
+ * \brief A match between frames.
+ */
+struct OnaFrame::OnaMatch {
+	WPtr queryFrame;
+	WPtr trainFrame;
+	std::vector<int> queryIdx, trainIdx;
+	std::vector<cv::Point2f> queryPoints, trainPoints;
+	std::vector<cv::Point2f> queryNormalisedPoints, trainNormalisedPoints;
+	cv::Mat essential;
+	std::vector<uchar> inliers;
+	Pose poseDiff;
+};
+
 OnaFrame::OnaFrame(int id, const Mat &image, const Mat &cameraMatrix, const std::vector<float> &distCoeffs): _id(id), _image(image), _cameraMatrix(cameraMatrix), _distCoeffs(distCoeffs) {
 }
 
@@ -32,10 +46,12 @@ Mat OnaFrame::getImage() const {
 }
 
 void OnaFrame::match(SPtr queryFrame, SPtr trainFrame, DescriptorMatcher &matcher, float maxDistance) {
-	OnaMatch &onaMatch = queryFrame->frameMatches[trainFrame->_id];
+	MatchSPtr onaMatch(new OnaMatch);
+	queryFrame->_frameMatchesFrom[trainFrame->_id] = onaMatch;
+	trainFrame->_frameMatchesTo[queryFrame->_id] = onaMatch;
 
-	onaMatch.queryFrame = queryFrame;
-	onaMatch.trainFrame = trainFrame;
+	onaMatch->queryFrame = queryFrame;
+	onaMatch->trainFrame = trainFrame;
 
 	std::vector<DMatch> matches;
 	if (!queryFrame->_descriptors.empty() && !trainFrame->_descriptors.empty()) {
@@ -43,17 +59,17 @@ void OnaFrame::match(SPtr queryFrame, SPtr trainFrame, DescriptorMatcher &matche
 
 		for (const DMatch &match : matches) {
 			if (maxDistance == 0 || match.distance <= maxDistance) {
-				onaMatch.queryPoints.push_back(queryFrame->_keyPoints[match.queryIdx].pt);
-				onaMatch.trainPoints.push_back(trainFrame->_keyPoints[match.trainIdx].pt);
-				onaMatch.queryIdx.push_back(match.queryIdx);
-				onaMatch.trainIdx.push_back(match.trainIdx);
+				onaMatch->queryPoints.push_back(queryFrame->_keyPoints[match.queryIdx].pt);
+				onaMatch->trainPoints.push_back(trainFrame->_keyPoints[match.trainIdx].pt);
+				onaMatch->queryIdx.push_back(match.queryIdx);
+				onaMatch->trainIdx.push_back(match.trainIdx);
 			}
 		}
 
-		if (onaMatch.queryPoints.size() > 0) {
+		if (onaMatch->queryPoints.size() > 0) {
 			// undistort and put in normal coordinates
-			undistortPoints(onaMatch.queryPoints, onaMatch.queryNormalisedPoints, queryFrame->_cameraMatrix, queryFrame->_distCoeffs);
-			undistortPoints(onaMatch.trainPoints, onaMatch.trainNormalisedPoints, trainFrame->_cameraMatrix, trainFrame->_distCoeffs);
+			undistortPoints(onaMatch->queryPoints, onaMatch->queryNormalisedPoints, queryFrame->_cameraMatrix, queryFrame->_distCoeffs);
+			undistortPoints(onaMatch->trainPoints, onaMatch->trainNormalisedPoints, trainFrame->_cameraMatrix, trainFrame->_distCoeffs);
 		}
 	}
 }
@@ -61,7 +77,7 @@ void OnaFrame::match(SPtr queryFrame, SPtr trainFrame, DescriptorMatcher &matche
 Mat OnaFrame::findEssentialMatRansac(int id, double ransacMaxDistance, double ransacConfidence) {
 	Mat E;
 
-	if (OnaMatch *matchPtr = getMatchById(id)) {
+	if (MatchSPtr matchPtr = getMatchById(id)) {
 		setEssentialMatRansac(*matchPtr, ransacMaxDistance, ransacConfidence);
 		matchPtr->essential.copyTo(E);
 	}
@@ -72,7 +88,7 @@ Mat OnaFrame::findEssentialMatRansac(int id, double ransacMaxDistance, double ra
 OnaFrame::Pose OnaFrame::findPoseDiff(int id) {
 	Pose poseDiff;
 
-	if (OnaMatch *matchPtr = getMatchById(id)) {
+	if (MatchSPtr matchPtr = getMatchById(id)) {
 		setPoseDiff(*matchPtr);
 		poseDiff =  matchPtr->poseDiff;
 	}
@@ -83,18 +99,18 @@ OnaFrame::Pose OnaFrame::findPoseDiff(int id) {
 Mat OnaFrame::drawMatchedFlowFrom(int id) {
 	Mat image;
 
-	if (OnaMatch *matchPtr = getMatchById(id)) {
+	if (MatchSPtr matchPtr = getMatchById(id)) {
 		drawMatchedFlow(_image, image, matchPtr->trainPoints, matchPtr->queryPoints, matchPtr->inliers);
 	}
 
 	return image;
 }
 
-OnaFrame::OnaMatch *OnaFrame::getMatchById(int id) {
-	IdMatchMap::iterator frameMatchIt = frameMatches.find(id);
+OnaFrame::MatchSPtr OnaFrame::getMatchById(int id) {
+	IdMatchMapFrom::iterator frameMatchIt = _frameMatchesFrom.find(id);
 
-	if (frameMatchIt != frameMatches.end()) {
-		return &(frameMatchIt->second);
+	if (frameMatchIt != _frameMatchesFrom.end()) {
+		return frameMatchIt->second;
 #ifndef NDEBUG
 	} else {
 		std::cout << "Match to frame with id: " << id << " not found" << std::endl;

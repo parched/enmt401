@@ -95,19 +95,14 @@ class OnaFrame {
 		cv::Mat drawMatchedFlowFrom(int id);
 
 	protected:
-		struct OnaMatch {
-			public:
-				WPtr queryFrame;
-				WPtr trainFrame;
-				std::vector<int> queryIdx, trainIdx;
-				std::vector<cv::Point2f> queryPoints, trainPoints;
-				std::vector<cv::Point2f> queryNormalisedPoints, trainNormalisedPoints;
-				cv::Mat essential;
-				std::vector<uchar> inliers;
-				Pose poseDiff;
-		};
+		struct OnaMatch;
 
-		typedef std::map<int, OnaMatch> IdMatchMap;
+		typedef std::unique_ptr<OnaMatch> MatchUPtr;
+		typedef std::shared_ptr<OnaMatch> MatchSPtr;
+		typedef std::weak_ptr<OnaMatch> MatchWPtr;
+
+		typedef std::map<int, MatchSPtr> IdMatchMapFrom;
+		typedef std::map<int, MatchWPtr> IdMatchMapTo;
 
 		int _id;
 		cv::Mat _image;
@@ -115,7 +110,8 @@ class OnaFrame {
 		std::vector<float> _distCoeffs;
 		std::vector<cv::KeyPoint> _keyPoints;
 		cv::Mat _descriptors;
-		IdMatchMap frameMatches;
+		IdMatchMapFrom _frameMatchesFrom;
+		IdMatchMapTo _frameMatchesTo;
 
 		/**
 		 * \brief Gets the OnaMatch from the id.
@@ -124,7 +120,7 @@ class OnaFrame {
 		 *
 		 * \return A pointer to the match, null_ptr if none.
 		 */
-		OnaMatch *getMatchById(int id);
+		MatchSPtr getMatchById(int id);
 
 		/**
 		 * \brief Sets the essential matrix from frame by id to this one.

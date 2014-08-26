@@ -207,10 +207,10 @@ int main(int argc, char **argv) {
 		OnaFrame::match(currentFrame, lastFrame, matcher, maxDescriptorDistance);
 
 		// find the essential matrix E
-		Mat E(currentFrame->findEssentialMatRansac(lastFrame->getId(), ransacMaxDistance, ransacConfidence));
+		Mat E = currentFrame->findEssentialMatRansac(lastFrame->getId(), ransacMaxDistance, ransacConfidence);
 
 		// get the rotation
-		OnaFrame::Pose poseDiff(currentFrame->findPoseDiff(lastFrame->getId()));
+		OnaFrame::Pose poseDiff = currentFrame->findPoseDiff(lastFrame->getId());
 
 		if (!poseDiff.R.empty()) {
 			// add to tally
@@ -229,7 +229,7 @@ int main(int argc, char **argv) {
 			std::cout << poseInfo.str() << std::endl;
 #endif
 			// drawing the results
-			Mat imgMatches(currentFrame->drawMatchedFlowFrom(lastFrame->getId()));
+			Mat imgMatches = currentFrame->drawMatchedFlowFrom(lastFrame->getId());
 #ifndef NDEBUG
 			putText(imgMatches, poseInfo.str(), Point(15, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0xf7, 0x2e, 0xfe));
 #endif

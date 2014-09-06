@@ -54,6 +54,7 @@ class OnaFrame {
 		 * \brief OnaFrame constructor.
 		 *
 		 * \param id The id of the frame which should be unique.
+		 * \param image The frame image.
 		 * \param cameraMatrix The corresponding camera matirx.
 		 * \param distCoeffs The corresponding radial distortion coefficients.
 		 */

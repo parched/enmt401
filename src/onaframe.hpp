@@ -131,7 +131,7 @@ class OnaFrame {
 		 */
 		cv::Mat drawMatchedFlowFrom(int id);
 
-	protected:
+	private:
 		/**
 		 * \brief A match between frames.
 		 */

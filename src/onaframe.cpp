@@ -27,6 +27,7 @@
 #include "onaframe.hpp"
 
 #include <iostream>
+#include <algorithm>
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
@@ -45,8 +46,64 @@ struct OnaFrame::OnaMatch {
 	cv::Mat essential;
 	std::vector<uchar> inliers;
 	Pose poseDiff;
-	cv::Mat points3D;
+	cv::Mat_<float> points3D;
+	float scale = 1.0;
+
+	void setScaleFrom(OnaMatch &matchFrom);
 };
+
+void OnaFrame::OnaMatch::setScaleFrom(OnaMatch &matchFrom) {
+	std::vector<int> thisMatchIdx, fromMatchIdx;
+
+	auto fromStartIter = matchFrom.queryIdx.begin();
+	auto fromEndIter = matchFrom.queryIdx.end();
+
+	for (std::size_t i = 0; i < inliers.size(); i++) {
+		if (inliers[i]) {
+			auto fromFoundIter = std::find(fromStartIter, fromEndIter, trainIdx[i]);
+			if (fromFoundIter != fromEndIter) {
+				std::size_t fromIterIdx = fromFoundIter - fromStartIter;
+				if (matchFrom.inliers[fromIterIdx]) {
+					thisMatchIdx.push_back(i);
+					fromMatchIdx.push_back(fromIterIdx);
+					fromStartIter = fromFoundIter;
+				}
+			}
+		}
+	}
+
+
+	if (thisMatchIdx.empty()) {
+		return;
+	} else {
+		std::vector<float> scales(thisMatchIdx.size());
+
+		Mat_<float> &fromPts = matchFrom.points3D;
+		Mat_<float> &toPts = points3D;
+
+		for (std::size_t i = 1; i < thisMatchIdx.size(); i++) {
+			// Assume homogenous with 1 end.
+			Vec3f vecFrom(
+					fromPts(0, i) - fromPts(0, i - 1),
+					fromPts(1, i) - fromPts(1, i - 1),
+					fromPts(2, i) - fromPts(2, i - 1)
+					);
+			Vec3f vecTo(
+					toPts(0, i) - toPts(0, i - 1),
+					toPts(1, i) - toPts(1, i - 1),
+					toPts(2, i) - toPts(2, i - 1)
+					);
+			scales.push_back(norm(vecTo) / norm(vecFrom));
+		}
+
+		// Find the median scale
+		std::sort(scales.begin(), scales.end());
+
+		scale = matchFrom.scale * scales[scales.size() / 2];
+
+		poseDiff.t *= scale;
+	}
+}
 
 OnaFrame::OnaFrame(int id, const Mat &image, const Mat &cameraMatrix, const std::vector<float> &distCoeffs): _id(id), _image(image), _cameraMatrix(cameraMatrix), _distCoeffs(distCoeffs) {
 }
@@ -106,6 +163,14 @@ Mat OnaFrame::findEssentialMatRansac(int id, double ransacMaxDistance, double ra
 	}
 
 	return E;
+}
+
+void OnaFrame::findScaleFrom(SPtr commonFrame, int idFrom) {
+	if (MatchSPtr matchToThisPtr = getMatchById(commonFrame->_id)) {
+		if (MatchSPtr matchToCommonPtr = commonFrame->getMatchById(idFrom)) {
+			matchToCommonPtr->setScaleFrom(*matchToThisPtr);
+		}
+	}
 }
 
 OnaFrame::Pose OnaFrame::findPoseDiff(int id) {

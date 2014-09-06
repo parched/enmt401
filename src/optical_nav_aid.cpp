@@ -212,6 +212,9 @@ int main(int argc, char **argv) {
 		// get the rotation
 		OnaFrame::Pose poseDiff = currentFrame->findPoseDiff(lastFrame->getId());
 
+		// set the scale
+		currentFrame->findScaleFrom(lastFrame, lastFrame->getId() - 1);
+
 		if (!poseDiff.R.empty()) {
 			// add to tally
 			totalR = totalR * poseDiff.R;

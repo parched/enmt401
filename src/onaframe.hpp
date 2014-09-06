@@ -106,6 +106,14 @@ class OnaFrame {
 		cv::Mat findEssentialMatRansac(int id, double ransacMaxDistance, double ransacConfidence);
 
 		/**
+		 * \brief Finds the scale between a frame to another and that one to this.
+		 *
+		 * \param commonFrame The common frame.
+		 * \param idFrom The ID of the first frame.
+		 */
+		void findScaleFrom(SPtr commonFrame, int idFrom);
+
+		/**
 		 * \brief Finds the pose difference w.r.t a frame.
 		 *
 		 * \param id The id of the frame to find the pose difference w.r.t.

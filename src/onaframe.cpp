@@ -35,6 +35,8 @@
 #include "pose.hpp"
 #include "matches.hpp"
 
+namespace ona {
+
 struct OnaFrame::OnaMatch {
 	WPtr queryFrame;
 	WPtr trainFrame;
@@ -224,3 +226,5 @@ void OnaFrame::setPoseDiff(OnaMatch &match) {
 			;
 	}
 }
+
+} // namespace ona

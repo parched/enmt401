@@ -43,6 +43,8 @@
 /* This needs to go last or it causes an error with c++11 */
 #include <argp.h>
 
+using namespace ona;
+
 const char *argp_program_version = "Optical Navigation Aid v?";
 const char *argp_program_bug_address = "<jagduley@gmail.com>";
 

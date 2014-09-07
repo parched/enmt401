@@ -32,6 +32,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
+namespace ona {
 
 /**
  * \brief An optical navgiation aid frame.
@@ -178,4 +179,7 @@ class OnaFrame {
 		 */
 		void setPoseDiff(OnaMatch &match);
 };
+
+} // namespace ona
+
 #endif

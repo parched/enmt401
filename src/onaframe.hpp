@@ -145,14 +145,14 @@ class OnaFrame {
 		typedef std::map<int, MatchSPtr> IdMatchMapFrom; /**< Map containing matches from a frame. */
 		typedef std::map<int, MatchWPtr> IdMatchMapTo; /**< Map containing matches to a frame. */
 
-		int _id; /**< ID. */
-		cv::Mat _image; /**< Image. */
-		cv::Mat _cameraMatrix; /**< Camera matrix. */
-		std::vector<float> _distCoeffs; /**< Radial distortion coefficients. */
-		std::vector<cv::KeyPoint> _keyPoints; /**< Key points. */
-		cv::Mat _descriptors; /**< Corresponding key point descriptors. */
-		IdMatchMapFrom _frameMatchesFrom; /**< Matches to other frames. */
-		IdMatchMapTo _frameMatchesTo; /**< Matches to this frame. */
+		int id_; /**< ID. */
+		cv::Mat image_; /**< Image. */
+		cv::Mat cameraMatrix_; /**< Camera matrix. */
+		std::vector<float> distCoeffs_; /**< Radial distortion coefficients. */
+		std::vector<cv::KeyPoint> keyPoints_; /**< Key points. */
+		cv::Mat descriptors_; /**< Corresponding key point descriptors. */
+		IdMatchMapFrom frameMatchesFrom_; /**< Matches to other frames. */
+		IdMatchMapTo frameMatchesTo_; /**< Matches to this frame. */
 
 		/**
 		 * \brief Gets the OnaMatch from the id.

@@ -105,42 +105,42 @@ void OnaFrame::OnaMatch::setScaleFrom(OnaMatch &matchFrom) {
 	}
 }
 
-OnaFrame::OnaFrame(int id, const cv::Mat &image, const cv::Mat &cameraMatrix, const std::vector<float> &distCoeffs): _id(id), _image(image), _cameraMatrix(cameraMatrix), _distCoeffs(distCoeffs) {
+OnaFrame::OnaFrame(int id, const cv::Mat &image, const cv::Mat &cameraMatrix, const std::vector<float> &distCoeffs): id_(id), image_(image), cameraMatrix_(cameraMatrix), distCoeffs_(distCoeffs) {
 }
 
 bool OnaFrame::compute(cv::FeatureDetector &detector, cv::DescriptorExtractor &extractor) {
-	CV_Assert(!_image.empty());
+	CV_Assert(!image_.empty());
 
-	detector.detect(_image, _keyPoints);
-	extractor.compute(_image, _keyPoints, _descriptors);
+	detector.detect(image_, keyPoints_);
+	extractor.compute(image_, keyPoints_, descriptors_);
 
 	return true;
 }
 
 int OnaFrame::getId() const {
-	return _id;
+	return id_;
 }
 
 cv::Mat OnaFrame::getImage() const {
-	return _image;
+	return image_;
 }
 
 void OnaFrame::match(SPtr queryFrame, SPtr trainFrame, cv::DescriptorMatcher &matcher, float maxDistance) {
 	MatchSPtr onaMatch(new OnaMatch);
-	queryFrame->_frameMatchesFrom[trainFrame->_id] = onaMatch;
-	trainFrame->_frameMatchesTo[queryFrame->_id] = onaMatch;
+	queryFrame->frameMatchesFrom_[trainFrame->id_] = onaMatch;
+	trainFrame->frameMatchesTo_[queryFrame->id_] = onaMatch;
 
 	onaMatch->queryFrame = queryFrame;
 	onaMatch->trainFrame = trainFrame;
 
 	std::vector<cv::DMatch> matches;
-	if (!queryFrame->_descriptors.empty() && !trainFrame->_descriptors.empty()) {
-		matcher.match(queryFrame->_descriptors, trainFrame->_descriptors, matches);
+	if (!queryFrame->descriptors_.empty() && !trainFrame->descriptors_.empty()) {
+		matcher.match(queryFrame->descriptors_, trainFrame->descriptors_, matches);
 
 		for (const cv::DMatch &match : matches) {
 			if (maxDistance == 0 || match.distance <= maxDistance) {
-				onaMatch->queryPoints.push_back(queryFrame->_keyPoints[match.queryIdx].pt);
-				onaMatch->trainPoints.push_back(trainFrame->_keyPoints[match.trainIdx].pt);
+				onaMatch->queryPoints.push_back(queryFrame->keyPoints_[match.queryIdx].pt);
+				onaMatch->trainPoints.push_back(trainFrame->keyPoints_[match.trainIdx].pt);
 				onaMatch->queryIdx.push_back(match.queryIdx);
 				onaMatch->trainIdx.push_back(match.trainIdx);
 			}
@@ -148,8 +148,8 @@ void OnaFrame::match(SPtr queryFrame, SPtr trainFrame, cv::DescriptorMatcher &ma
 
 		if (onaMatch->queryPoints.size() > 0) {
 			// undistort and put in normal coordinates
-			undistortPoints(onaMatch->queryPoints, onaMatch->queryNormalisedPoints, queryFrame->_cameraMatrix, queryFrame->_distCoeffs);
-			undistortPoints(onaMatch->trainPoints, onaMatch->trainNormalisedPoints, trainFrame->_cameraMatrix, trainFrame->_distCoeffs);
+			undistortPoints(onaMatch->queryPoints, onaMatch->queryNormalisedPoints, queryFrame->cameraMatrix_, queryFrame->distCoeffs_);
+			undistortPoints(onaMatch->trainPoints, onaMatch->trainNormalisedPoints, trainFrame->cameraMatrix_, trainFrame->distCoeffs_);
 		}
 	}
 }
@@ -166,7 +166,7 @@ cv::Mat OnaFrame::findEssentialMatRansac(int id, double ransacMaxDistance, doubl
 }
 
 void OnaFrame::findScaleFrom(SPtr commonFrame, int idFrom) {
-	if (MatchSPtr matchToThisPtr = getMatchById(commonFrame->_id)) {
+	if (MatchSPtr matchToThisPtr = getMatchById(commonFrame->id_)) {
 		if (MatchSPtr matchToCommonPtr = commonFrame->getMatchById(idFrom)) {
 			matchToCommonPtr->setScaleFrom(*matchToThisPtr);
 		}
@@ -188,16 +188,16 @@ cv::Mat OnaFrame::drawMatchedFlowFrom(int id) {
 	cv::Mat image;
 
 	if (MatchSPtr matchPtr = getMatchById(id)) {
-		drawMatchedFlow(_image, image, matchPtr->trainPoints, matchPtr->queryPoints, matchPtr->inliers);
+		drawMatchedFlow(image_, image, matchPtr->trainPoints, matchPtr->queryPoints, matchPtr->inliers);
 	}
 
 	return image;
 }
 
 OnaFrame::MatchSPtr OnaFrame::getMatchById(int id) {
-	IdMatchMapFrom::iterator frameMatchIt = _frameMatchesFrom.find(id);
+	IdMatchMapFrom::iterator frameMatchIt = frameMatchesFrom_.find(id);
 
-	if (frameMatchIt != _frameMatchesFrom.end()) {
+	if (frameMatchIt != frameMatchesFrom_.end()) {
 		return frameMatchIt->second;
 #ifndef NDEBUG
 	} else {

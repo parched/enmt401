@@ -5,29 +5,27 @@
 
 #include <iostream>
 
-using namespace cv;
-
-void getRt(const Mat_<double> &E, Mat_<double> &R, Mat_<double> &t) {
+void getRt(const cv::Mat_<double> &E, cv::Mat_<double> &R, cv::Mat_<double> &t) {
 
 	// SVD to get projection
-	Mat w, u, vt;
-	SVD::compute(E, w, u, vt, SVD::MODIFY_A);
+	cv::Mat w, u, vt;
+	cv::SVD::compute(E, w, u, vt, cv::SVD::MODIFY_A);
 
-	Matx33d W(0., -1., 0., 1., 0., 0., 0., 0., 1.);
+	cv::Matx33d W(0., -1., 0., 1., 0., 0., 0., 0., 1.);
 
-	R = u * Mat(W) * vt;
+	R = u * cv::Mat(W) * vt;
 	
 	t = u.col(2);
 }
 
-void getP(Matx34d &P, const Mat_<double> &R, const Mat_<double> &t) {
-	P = Matx34d(R(0, 0), R(0, 1), R(0, 2), t(0), 
+void getP(cv::Matx34d &P, const cv::Mat_<double> &R, const cv::Mat_<double> &t) {
+	P = cv::Matx34d(R(0, 0), R(0, 1), R(0, 2), t(0), 
 			R(1, 0), R(1, 1), R(1, 2), t(1), 
 			R(2, 0), R(2, 1), R(2, 2), t(2));
 }
 
-bool checkCoherentRotation(const Mat_<double> &R) {
-	if (std::abs(determinant(R)) - 1. > 1e-07) {
+bool checkCoherentRotation(const cv::Mat_<double> &R) {
+	if (std::abs(cv::determinant(R)) - 1. > 1e-07) {
 		std::cerr << "|det(R)| != 1, not a rotation matrix" << std::endl;
 		return false;
 	}
@@ -35,13 +33,14 @@ bool checkCoherentRotation(const Mat_<double> &R) {
 	return true;
 }
 
-void getEulerAngles(const Mat_<double> &R, Vec3d &angles) {
+void getEulerAngles(const cv::Mat_<double> &R, cv::Vec3d &angles) {
 	angles(0)  = std::atan2(R(2, 1), R(2, 2)) * 180.0 / CV_PI;
 	angles(1)  = std::atan2(-R(2, 0), sqrt(R(2, 1) * R(2, 1) + R(2, 2) * R(2, 2))) * 180.0 / CV_PI;
 	angles(2)  = std::atan2(R(1, 0), R(0, 0)) * 180.0 / CV_PI;
 }
 
 /*-----from opencv 3 five-point.cpp------------------------------*/
+namespace cv {
 void decomposeEssentialMat( InputArray _E, OutputArray _R1, OutputArray _R2, OutputArray _t )
 {
     Mat E = _E.getMat().reshape(1, 3);
@@ -214,5 +213,6 @@ int recoverPose( InputArray E, InputArray _points1, InputArray _points2, OutputA
         if (_mask.needed()) mask4.copyTo(_mask);
         return good4;
     }
+}
 }
 

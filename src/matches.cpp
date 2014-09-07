@@ -1,11 +1,9 @@
 
 #include "matches.hpp"
 
-using namespace cv;
+void getMatchedPoints(std::vector<cv::Point2f> &lastPoints, std::vector<cv::Point2f> &currentPoints, const std::vector<cv::KeyPoint> &keyPointsLast, const std::vector<cv::KeyPoint> &keyPointsCurrent, const std::vector<cv::DMatch> &matches, float maxDistance) {
 
-void getMatchedPoints(vector<Point2f> &lastPoints, vector<Point2f> &currentPoints, const vector<KeyPoint> &keyPointsLast, const vector<KeyPoint> &keyPointsCurrent, const vector<DMatch> &matches, float maxDistance) {
-
-	for (const DMatch &match : matches) {
+	for (const cv::DMatch &match : matches) {
 		if (maxDistance == 0 || match.distance <= maxDistance) {
 			lastPoints.push_back(keyPointsLast[match.queryIdx].pt);
 			currentPoints.push_back(keyPointsCurrent[match.trainIdx].pt);
@@ -13,16 +11,16 @@ void getMatchedPoints(vector<Point2f> &lastPoints, vector<Point2f> &currentPoint
 	}
 }
 
-void drawMatchedFlow(const Mat &currentFrame, Mat &imgMatches, const vector<Point2f> &lastPoints, const vector<Point2f> &currentPoints, const vector<uchar> &inliers) {
+void drawMatchedFlow(const cv::Mat &currentFrame, cv::Mat &imgMatches, const std::vector<cv::Point2f> &lastPoints, const std::vector<cv::Point2f> &currentPoints, const std::vector<uchar> &inliers) {
 	currentFrame.copyTo(imgMatches);
 
 	assert(lastPoints.size() == currentPoints.size());
 	assert(lastPoints.size() == inliers.size());
 
-	for (vector<Point2f>::size_type i = 0; i != lastPoints.size(); i++) {
+	for (std::vector<cv::Point2f>::size_type i = 0; i != lastPoints.size(); i++) {
 		if (inliers[i]) {
-			line(imgMatches, lastPoints[i], currentPoints[i], Scalar(0, 0, 255));
-			circle(imgMatches, currentPoints[i], 2, Scalar(0, 0, 255));
+			line(imgMatches, lastPoints[i], currentPoints[i], cv::Scalar(0, 0, 255));
+			circle(imgMatches, currentPoints[i], 2, cv::Scalar(0, 0, 255));
 		}
 	}
 }

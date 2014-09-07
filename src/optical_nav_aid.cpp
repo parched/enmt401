@@ -43,8 +43,6 @@
 /* This needs to go last or it causes an error with c++11 */
 #include <argp.h>
 
-using namespace cv;
-
 const char *argp_program_version = "Optical Navigation Aid v?";
 const char *argp_program_bug_address = "<jagduley@gmail.com>";
 
@@ -64,7 +62,7 @@ namespace {
 
 	float tz40KData[] = {520., 0., 320., 0., 520., 240., 0., 0., 1.};
 	float fireflyData[] = {1.3840577621390364e+03, 0., 3.0934395664809961e+02, 0., 1.3834780739724592e+03, 2.4440820692178860e+02, 0., 0., 1.};
-	vector<float> fireflyDistCoeffs { -2.8638478534592271e-01, -7.1981969625655881e-02, -3.2364565871468563e-03, 1.5622879005666110e-03, 4.9534384707813928e+00};
+	std::vector<float> fireflyDistCoeffs { -2.8638478534592271e-01, -7.1981969625655881e-02, -3.2364565871468563e-03, 1.5622879005666110e-03, 4.9534384707813928e+00};
 }
 
 struct arguments {
@@ -100,15 +98,15 @@ int main(int argc, char **argv) {
 	argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
 	// the camera matrix and distortion coeffs
-	Mat K = Mat::eye(3, 3, CV_32F);
-	vector<float> distCoeffs;
+	cv::Mat K = cv::Mat::eye(3, 3, CV_32F);
+	std::vector<float> distCoeffs;
 
 	int frameCounter = 0;
 
 	OnaFrame::SPtr currentFrame;
 	OnaFrame::SPtr lastFrame;
 
-	VideoCapture cap;
+	cv::VideoCapture cap;
 	input_t input;
 
 	int outFps = 10;
@@ -121,12 +119,12 @@ int main(int argc, char **argv) {
 		input = CAM;
 		std::cout << "Input from camera " << arguments.inputFile << std::endl;
 		cap.open(cameraIndex);
-		K = Mat(3, 3, CV_32F, tz40KData);
+		K = cv::Mat(3, 3, CV_32F, tz40KData);
 	} else {
 		input = VID;
 		std::cout << "Input from file " << arguments.inputFile << std::endl;
 		cap.open(inputFile);
-		K = Mat(3, 3, CV_32F, fireflyData);
+		K = cv::Mat(3, 3, CV_32F, fireflyData);
 		distCoeffs = fireflyDistCoeffs;
 	}
 
@@ -135,7 +133,7 @@ int main(int argc, char **argv) {
 
 		outFps = cap.get(CV_CAP_PROP_FPS);
 
-		Mat image;
+		cv::Mat image;
 		if(cap.read(image)) {
 			currentFrame = OnaFrame::SPtr(new OnaFrame(frameCounter, image, K, distCoeffs));
 		} else {
@@ -146,11 +144,11 @@ int main(int argc, char **argv) {
 		input = PIC;
 		std::cout << "stream not open" << std::endl;
 
-		lastFrame = OnaFrame::SPtr(new OnaFrame(frameCounter - 1, imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
-		currentFrame = OnaFrame::SPtr(new OnaFrame(frameCounter, imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
+		lastFrame = OnaFrame::SPtr(new OnaFrame(frameCounter - 1, cv::imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
+		currentFrame = OnaFrame::SPtr(new OnaFrame(frameCounter, cv::imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
 	}
 
-	VideoWriter out;
+	cv::VideoWriter out;
 	if (!arguments.outputFile.empty()) {
 		out.open(arguments.outputFile, CV_FOURCC('H', '2', '6', '4'), outFps, currentFrame->getImage().size());
 
@@ -164,13 +162,13 @@ int main(int argc, char **argv) {
 		std::cout << "Not writing output." << std::endl;
 	}
 
-	Mat totalR = Mat::eye(3, 3, CV_64F);
+	cv::Mat totalR = cv::Mat::eye(3, 3, CV_64F);
 
-	SurfFeatureDetector detector(400);
+	cv::SurfFeatureDetector detector(400);
 
-	SurfDescriptorExtractor extractor;
+	cv::SurfDescriptorExtractor extractor;
 	
-	BFMatcher matcher(NORM_L2, true);
+	cv::BFMatcher matcher(cv::NORM_L2, true);
 
 	currentFrame->compute(detector, extractor);
 
@@ -179,12 +177,12 @@ int main(int argc, char **argv) {
 #ifndef NDEBUG
 	std::cout << "Starting main loop." << std::endl;
 #endif
-	while(waitKey(100) < 0){
+	while(cv::waitKey(100) < 0){
 		frameCounter++;
 #ifndef NDEBUG
 		std::cout << "frame " << frameCounter << std::endl;
 #endif
-		Mat newImage;
+		cv::Mat newImage;
 
 		if (input == PIC) {
 			newImage = lastFrame->getImage();
@@ -207,7 +205,7 @@ int main(int argc, char **argv) {
 		OnaFrame::match(currentFrame, lastFrame, matcher, maxDescriptorDistance);
 
 		// find the essential matrix E
-		Mat E = currentFrame->findEssentialMatRansac(lastFrame->getId(), ransacMaxDistance, ransacConfidence);
+		cv::Mat E = currentFrame->findEssentialMatRansac(lastFrame->getId(), ransacMaxDistance, ransacConfidence);
 
 		// get the rotation
 		OnaFrame::Pose poseDiff = currentFrame->findPoseDiff(lastFrame->getId());
@@ -219,7 +217,7 @@ int main(int argc, char **argv) {
 			// add to tally
 			totalR = totalR * poseDiff.R;
 #ifndef NDEBUG
-			Vec3d eulerAngles;
+			cv::Vec3d eulerAngles;
 			getEulerAngles(totalR, eulerAngles);
 			std::stringstream poseInfo;
 			poseInfo.setf(std::ios::fixed, std::ios::floatfield);
@@ -232,12 +230,12 @@ int main(int argc, char **argv) {
 			std::cout << poseInfo.str() << std::endl;
 #endif
 			// drawing the results
-			Mat imgMatches = currentFrame->drawMatchedFlowFrom(lastFrame->getId());
+			cv::Mat imgMatches = currentFrame->drawMatchedFlowFrom(lastFrame->getId());
 #ifndef NDEBUG
-			putText(imgMatches, poseInfo.str(), Point(15, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0xf7, 0x2e, 0xfe));
+			putText(imgMatches, poseInfo.str(), cv::Point(15, 15), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0xf7, 0x2e, 0xfe));
 #endif
 
-			namedWindow("matches", 1);
+			cv::namedWindow("matches", 1);
 			imshow("matches", imgMatches);
 
 			out.write(imgMatches);

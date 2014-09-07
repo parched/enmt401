@@ -46,6 +46,7 @@ bool checkCoherentRotation(const cv::Mat_<double> &R);
 void getEulerAngles(const cv::Mat_<double> &R, cv::Vec3d &angles);
 
 
+namespace cv {
 
 /**
  * \brief Recovers the pose froman essential matrix
@@ -64,5 +65,6 @@ int recoverPose( cv::InputArray E, cv::InputArray points1, cv::InputArray points
                             cv::OutputArray R, cv::OutputArray t,
 			    cv::OutputArray U,
                             cv::InputOutputArray mask = cv::noArray() );
+}
 
 #endif

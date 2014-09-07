@@ -35,8 +35,6 @@
 #include "pose.hpp"
 #include "matches.hpp"
 
-using namespace cv;
-
 struct OnaFrame::OnaMatch {
 	WPtr queryFrame;
 	WPtr trainFrame;
@@ -78,17 +76,17 @@ void OnaFrame::OnaMatch::setScaleFrom(OnaMatch &matchFrom) {
 	} else {
 		std::vector<float> scales(thisMatchIdx.size());
 
-		Mat_<float> &fromPts = matchFrom.points3D;
-		Mat_<float> &toPts = points3D;
+		cv::Mat_<float> &fromPts = matchFrom.points3D;
+		cv::Mat_<float> &toPts = points3D;
 
 		for (std::size_t i = 1; i < thisMatchIdx.size(); i++) {
 			// Assume homogenous with 1 end.
-			Vec3f vecFrom(
+			cv::Vec3f vecFrom(
 					fromPts(0, i) - fromPts(0, i - 1),
 					fromPts(1, i) - fromPts(1, i - 1),
 					fromPts(2, i) - fromPts(2, i - 1)
 					);
-			Vec3f vecTo(
+			cv::Vec3f vecTo(
 					toPts(0, i) - toPts(0, i - 1),
 					toPts(1, i) - toPts(1, i - 1),
 					toPts(2, i) - toPts(2, i - 1)
@@ -105,10 +103,10 @@ void OnaFrame::OnaMatch::setScaleFrom(OnaMatch &matchFrom) {
 	}
 }
 
-OnaFrame::OnaFrame(int id, const Mat &image, const Mat &cameraMatrix, const std::vector<float> &distCoeffs): _id(id), _image(image), _cameraMatrix(cameraMatrix), _distCoeffs(distCoeffs) {
+OnaFrame::OnaFrame(int id, const cv::Mat &image, const cv::Mat &cameraMatrix, const std::vector<float> &distCoeffs): _id(id), _image(image), _cameraMatrix(cameraMatrix), _distCoeffs(distCoeffs) {
 }
 
-bool OnaFrame::compute(FeatureDetector &detector, DescriptorExtractor &extractor) {
+bool OnaFrame::compute(cv::FeatureDetector &detector, cv::DescriptorExtractor &extractor) {
 	CV_Assert(!_image.empty());
 
 	detector.detect(_image, _keyPoints);
@@ -121,11 +119,11 @@ int OnaFrame::getId() const {
 	return _id;
 }
 
-Mat OnaFrame::getImage() const {
+cv::Mat OnaFrame::getImage() const {
 	return _image;
 }
 
-void OnaFrame::match(SPtr queryFrame, SPtr trainFrame, DescriptorMatcher &matcher, float maxDistance) {
+void OnaFrame::match(SPtr queryFrame, SPtr trainFrame, cv::DescriptorMatcher &matcher, float maxDistance) {
 	MatchSPtr onaMatch(new OnaMatch);
 	queryFrame->_frameMatchesFrom[trainFrame->_id] = onaMatch;
 	trainFrame->_frameMatchesTo[queryFrame->_id] = onaMatch;
@@ -133,11 +131,11 @@ void OnaFrame::match(SPtr queryFrame, SPtr trainFrame, DescriptorMatcher &matche
 	onaMatch->queryFrame = queryFrame;
 	onaMatch->trainFrame = trainFrame;
 
-	std::vector<DMatch> matches;
+	std::vector<cv::DMatch> matches;
 	if (!queryFrame->_descriptors.empty() && !trainFrame->_descriptors.empty()) {
 		matcher.match(queryFrame->_descriptors, trainFrame->_descriptors, matches);
 
-		for (const DMatch &match : matches) {
+		for (const cv::DMatch &match : matches) {
 			if (maxDistance == 0 || match.distance <= maxDistance) {
 				onaMatch->queryPoints.push_back(queryFrame->_keyPoints[match.queryIdx].pt);
 				onaMatch->trainPoints.push_back(trainFrame->_keyPoints[match.trainIdx].pt);
@@ -154,8 +152,8 @@ void OnaFrame::match(SPtr queryFrame, SPtr trainFrame, DescriptorMatcher &matche
 	}
 }
 
-Mat OnaFrame::findEssentialMatRansac(int id, double ransacMaxDistance, double ransacConfidence) {
-	Mat E;
+cv::Mat OnaFrame::findEssentialMatRansac(int id, double ransacMaxDistance, double ransacConfidence) {
+	cv::Mat E;
 
 	if (MatchSPtr matchPtr = getMatchById(id)) {
 		setEssentialMatRansac(*matchPtr, ransacMaxDistance, ransacConfidence);
@@ -184,8 +182,8 @@ OnaFrame::Pose OnaFrame::findPoseDiff(int id) {
 	return poseDiff;
 }
 
-Mat OnaFrame::drawMatchedFlowFrom(int id) {
-	Mat image;
+cv::Mat OnaFrame::drawMatchedFlowFrom(int id) {
+	cv::Mat image;
 
 	if (MatchSPtr matchPtr = getMatchById(id)) {
 		drawMatchedFlow(_image, image, matchPtr->trainPoints, matchPtr->queryPoints, matchPtr->inliers);
@@ -210,7 +208,7 @@ OnaFrame::MatchSPtr OnaFrame::getMatchById(int id) {
 
 void OnaFrame::setEssentialMatRansac(OnaMatch &match, double ransacMaxDistance, double ransacConfidence) {
 	if (match.queryNormalisedPoints.size() > 0) {
-		match.essential = findFundamentalMat(match.trainNormalisedPoints, match.queryNormalisedPoints, FM_RANSAC, ransacMaxDistance, ransacConfidence, match.inliers);
+		match.essential = findFundamentalMat(match.trainNormalisedPoints, match.queryNormalisedPoints, cv::FM_RANSAC, ransacMaxDistance, ransacConfidence, match.inliers);
 	}
 }
 

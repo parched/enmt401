@@ -35,9 +35,8 @@
 #include "pose.hpp"
 #include "matches.hpp"
 
-namespace ona {
 
-struct OnaFrame::OnaMatch {
+struct ona::Frame::OnaMatch {
 	WPtr queryFrame;
 	WPtr trainFrame;
 	std::vector<int> queryIdx, trainIdx;
@@ -52,7 +51,7 @@ struct OnaFrame::OnaMatch {
 	void setScaleFrom(OnaMatch &matchFrom);
 };
 
-void OnaFrame::OnaMatch::setScaleFrom(OnaMatch &matchFrom) {
+void ona::Frame::OnaMatch::setScaleFrom(OnaMatch &matchFrom) {
 	std::vector<int> thisMatchIdx, fromMatchIdx;
 
 	auto fromStartIter = matchFrom.queryIdx.begin();
@@ -105,10 +104,10 @@ void OnaFrame::OnaMatch::setScaleFrom(OnaMatch &matchFrom) {
 	}
 }
 
-OnaFrame::OnaFrame(int id, const cv::Mat &image, const cv::Mat &cameraMatrix, const std::vector<float> &distCoeffs): id_(id), image_(image), cameraMatrix_(cameraMatrix), distCoeffs_(distCoeffs) {
+ona::Frame::Frame(int id, const cv::Mat &image, const cv::Mat &cameraMatrix, const std::vector<float> &distCoeffs): id_(id), image_(image), cameraMatrix_(cameraMatrix), distCoeffs_(distCoeffs) {
 }
 
-bool OnaFrame::compute(cv::FeatureDetector &detector, cv::DescriptorExtractor &extractor) {
+bool ona::Frame::compute(cv::FeatureDetector &detector, cv::DescriptorExtractor &extractor) {
 	CV_Assert(!image_.empty());
 
 	detector.detect(image_, keyPoints_);
@@ -117,15 +116,15 @@ bool OnaFrame::compute(cv::FeatureDetector &detector, cv::DescriptorExtractor &e
 	return true;
 }
 
-int OnaFrame::getId() const {
+int ona::Frame::getId() const {
 	return id_;
 }
 
-cv::Mat OnaFrame::getImage() const {
+cv::Mat ona::Frame::getImage() const {
 	return image_;
 }
 
-void OnaFrame::match(SPtr queryFrame, SPtr trainFrame, cv::DescriptorMatcher &matcher, float maxDistance) {
+void ona::Frame::match(SPtr queryFrame, SPtr trainFrame, cv::DescriptorMatcher &matcher, float maxDistance) {
 	MatchSPtr onaMatch(new OnaMatch);
 	queryFrame->frameMatchesFrom_[trainFrame->id_] = onaMatch;
 	trainFrame->frameMatchesTo_[queryFrame->id_] = onaMatch;
@@ -154,7 +153,7 @@ void OnaFrame::match(SPtr queryFrame, SPtr trainFrame, cv::DescriptorMatcher &ma
 	}
 }
 
-cv::Mat OnaFrame::findEssentialMatRansac(int id, double ransacMaxDistance, double ransacConfidence) {
+cv::Mat ona::Frame::findEssentialMatRansac(int id, double ransacMaxDistance, double ransacConfidence) {
 	cv::Mat E;
 
 	if (MatchSPtr matchPtr = getMatchById(id)) {
@@ -165,7 +164,7 @@ cv::Mat OnaFrame::findEssentialMatRansac(int id, double ransacMaxDistance, doubl
 	return E;
 }
 
-void OnaFrame::findScaleFrom(SPtr commonFrame, int idFrom) {
+void ona::Frame::findScaleFrom(SPtr commonFrame, int idFrom) {
 	if (MatchSPtr matchToThisPtr = getMatchById(commonFrame->id_)) {
 		if (MatchSPtr matchToCommonPtr = commonFrame->getMatchById(idFrom)) {
 			matchToCommonPtr->setScaleFrom(*matchToThisPtr);
@@ -173,7 +172,7 @@ void OnaFrame::findScaleFrom(SPtr commonFrame, int idFrom) {
 	}
 }
 
-OnaFrame::Pose OnaFrame::findPoseDiff(int id) {
+ona::Frame::Pose ona::Frame::findPoseDiff(int id) {
 	Pose poseDiff;
 
 	if (MatchSPtr matchPtr = getMatchById(id)) {
@@ -184,7 +183,7 @@ OnaFrame::Pose OnaFrame::findPoseDiff(int id) {
 	return poseDiff;
 }
 
-cv::Mat OnaFrame::drawMatchedFlowFrom(int id) {
+cv::Mat ona::Frame::drawMatchedFlowFrom(int id) {
 	cv::Mat image;
 
 	if (MatchSPtr matchPtr = getMatchById(id)) {
@@ -194,7 +193,7 @@ cv::Mat OnaFrame::drawMatchedFlowFrom(int id) {
 	return image;
 }
 
-OnaFrame::MatchSPtr OnaFrame::getMatchById(int id) {
+ona::Frame::MatchSPtr ona::Frame::getMatchById(int id) {
 	IdMatchMapFrom::iterator frameMatchIt = frameMatchesFrom_.find(id);
 
 	if (frameMatchIt != frameMatchesFrom_.end()) {
@@ -208,13 +207,13 @@ OnaFrame::MatchSPtr OnaFrame::getMatchById(int id) {
 	return nullptr;
 }
 
-void OnaFrame::setEssentialMatRansac(OnaMatch &match, double ransacMaxDistance, double ransacConfidence) {
+void ona::Frame::setEssentialMatRansac(OnaMatch &match, double ransacMaxDistance, double ransacConfidence) {
 	if (match.queryNormalisedPoints.size() > 0) {
 		match.essential = findFundamentalMat(match.trainNormalisedPoints, match.queryNormalisedPoints, cv::FM_RANSAC, ransacMaxDistance, ransacConfidence, match.inliers);
 	}
 }
 
-void OnaFrame::setPoseDiff(OnaMatch &match) {
+void ona::Frame::setPoseDiff(OnaMatch &match) {
 	if (match.queryNormalisedPoints.size() > 0) {
 #ifndef NDEBUG
 		std::cout << "Nubmer of good triangulation points: " <<
@@ -226,5 +225,3 @@ void OnaFrame::setPoseDiff(OnaMatch &match) {
 			;
 	}
 }
-
-} // namespace ona

@@ -37,11 +37,11 @@ namespace ona {
 /**
  * \brief An optical navgiation aid frame.
  */
-class OnaFrame {
+class Frame {
 	public:
-		typedef std::unique_ptr<OnaFrame> UPtr; /**< A unique pointer to an OnaFrame */
-		typedef std::shared_ptr<OnaFrame> SPtr; /**< A shared pointer to an OnaFrame */
-		typedef std::weak_ptr<OnaFrame> WPtr; /**< A weak pointer to an OnaFrame */
+		typedef std::unique_ptr<Frame> UPtr; /**< A unique pointer to a Frame */
+		typedef std::shared_ptr<Frame> SPtr; /**< A shared pointer to a Frame */
+		typedef std::weak_ptr<Frame> WPtr; /**< A weak pointer to a Frame */
 
 		/**
 		 * \brief A pose transformation.
@@ -52,24 +52,24 @@ class OnaFrame {
 		};
 
 		/**
-		 * \brief OnaFrame constructor.
+		 * \brief Frame constructor.
 		 *
 		 * \param id The id of the frame which should be unique.
 		 * \param image The frame image.
 		 * \param cameraMatrix The corresponding camera matirx.
 		 * \param distCoeffs The corresponding radial distortion coefficients.
 		 */
-		OnaFrame(int id, const cv::Mat &image, const cv::Mat &cameraMatrix, const std::vector<float> &distCoeffs);
+		Frame(int id, const cv::Mat &image, const cv::Mat &cameraMatrix, const std::vector<float> &distCoeffs);
 
 		/**
-		 * \brief Gets the id of the OnaFrame
+		 * \brief Gets the id of the Frame
 		 *
 		 * \return The id.
 		 */
 		int getId() const;
 
 		/**
-		 * \brief Gets the image of the OnaFrame.
+		 * \brief Gets the image of the Frame.
 		 *
 		 * \return The image.
 		 */

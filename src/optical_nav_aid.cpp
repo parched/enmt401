@@ -43,8 +43,6 @@
 /* This needs to go last or it causes an error with c++11 */
 #include <argp.h>
 
-using namespace ona;
-
 const char *argp_program_version = "Optical Navigation Aid v?";
 const char *argp_program_bug_address = "<jagduley@gmail.com>";
 
@@ -105,8 +103,8 @@ int main(int argc, char **argv) {
 
 	int frameCounter = 0;
 
-	OnaFrame::SPtr currentFrame;
-	OnaFrame::SPtr lastFrame;
+	ona::Frame::SPtr currentFrame;
+	ona::Frame::SPtr lastFrame;
 
 	cv::VideoCapture cap;
 	input_t input;
@@ -137,7 +135,7 @@ int main(int argc, char **argv) {
 
 		cv::Mat image;
 		if(cap.read(image)) {
-			currentFrame = OnaFrame::SPtr(new OnaFrame(frameCounter, image, K, distCoeffs));
+			currentFrame = ona::Frame::SPtr(new ona::Frame(frameCounter, image, K, distCoeffs));
 		} else {
 			std::cerr << "Could not read an image from capture" << std::endl;
 			return 1;
@@ -146,8 +144,8 @@ int main(int argc, char **argv) {
 		input = PIC;
 		std::cout << "stream not open" << std::endl;
 
-		lastFrame = OnaFrame::SPtr(new OnaFrame(frameCounter - 1, cv::imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
-		currentFrame = OnaFrame::SPtr(new OnaFrame(frameCounter, cv::imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
+		lastFrame = ona::Frame::SPtr(new ona::Frame(frameCounter - 1, cv::imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
+		currentFrame = ona::Frame::SPtr(new ona::Frame(frameCounter, cv::imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
 	}
 
 	cv::VideoWriter out;
@@ -196,7 +194,7 @@ int main(int argc, char **argv) {
 		}
 
 		lastFrame = currentFrame;
-		currentFrame = OnaFrame::SPtr(new OnaFrame(frameCounter, newImage, K, distCoeffs));
+		currentFrame = ona::Frame::SPtr(new ona::Frame(frameCounter, newImage, K, distCoeffs));
 
 		//tFrameAcquired = clock();
 
@@ -204,13 +202,13 @@ int main(int argc, char **argv) {
 		currentFrame->compute(detector, extractor);
 
 		// matching descriptors
-		OnaFrame::match(currentFrame, lastFrame, matcher, maxDescriptorDistance);
+		ona::Frame::match(currentFrame, lastFrame, matcher, maxDescriptorDistance);
 
 		// find the essential matrix E
 		cv::Mat E = currentFrame->findEssentialMatRansac(lastFrame->getId(), ransacMaxDistance, ransacConfidence);
 
 		// get the rotation
-		OnaFrame::Pose poseDiff = currentFrame->findPoseDiff(lastFrame->getId());
+		ona::Frame::Pose poseDiff = currentFrame->findPoseDiff(lastFrame->getId());
 
 		// set the scale
 		currentFrame->findScaleFrom(lastFrame, lastFrame->getId() - 1);

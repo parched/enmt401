@@ -39,6 +39,7 @@
 #include "matches.hpp"
 #include "pose.hpp"
 #include "onaframe.hpp"
+#include "onamatch.hpp"
 
 /* This needs to go last or it causes an error with c++11 */
 #include <argp.h>
@@ -103,8 +104,8 @@ int main(int argc, char **argv) {
 
 	int frameCounter = 0;
 
-	ona::Frame::SPtr currentFrame;
-	ona::Frame::SPtr lastFrame;
+	ona::Frame::UPtr currentFrame;
+	ona::Frame::UPtr lastFrame;
 
 	cv::VideoCapture cap;
 	input_t input;
@@ -135,7 +136,7 @@ int main(int argc, char **argv) {
 
 		cv::Mat image;
 		if(cap.read(image)) {
-			currentFrame = ona::Frame::SPtr(new ona::Frame(frameCounter, image, K, distCoeffs));
+			currentFrame = ona::Frame::UPtr(new ona::Frame(frameCounter, image, K, distCoeffs));
 		} else {
 			std::cerr << "Could not read an image from capture" << std::endl;
 			return 1;
@@ -144,8 +145,8 @@ int main(int argc, char **argv) {
 		input = PIC;
 		std::cout << "stream not open" << std::endl;
 
-		lastFrame = ona::Frame::SPtr(new ona::Frame(frameCounter - 1, cv::imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
-		currentFrame = ona::Frame::SPtr(new ona::Frame(frameCounter, cv::imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
+		lastFrame = ona::Frame::UPtr(new ona::Frame(frameCounter - 1, cv::imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
+		currentFrame = ona::Frame::UPtr(new ona::Frame(frameCounter, cv::imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
 	}
 
 	cv::VideoWriter out;
@@ -173,6 +174,8 @@ int main(int argc, char **argv) {
 	currentFrame->compute(detector, extractor);
 
 	//clock_t tFrameAcquired;
+	
+	ona::Match::UPtr lastMatch, currentMatch;
 
 #ifndef NDEBUG
 	std::cout << "Starting main loop." << std::endl;
@@ -193,25 +196,29 @@ int main(int argc, char **argv) {
 			}
 		}
 
-		lastFrame = currentFrame;
-		currentFrame = ona::Frame::SPtr(new ona::Frame(frameCounter, newImage, K, distCoeffs));
+		lastFrame = std::move(currentFrame);
+		currentFrame = ona::Frame::UPtr(new ona::Frame(frameCounter, newImage, K, distCoeffs));
 
 		//tFrameAcquired = clock();
 
 		// computing descriptors
 		currentFrame->compute(detector, extractor);
 
-		// matching descriptors
-		ona::Frame::match(currentFrame, lastFrame, matcher, maxDescriptorDistance);
+		// compute the match with the last frame.
+		lastMatch = std::move(currentMatch);
+		currentMatch = ona::Match::UPtr(new ona::Match(*currentFrame, *lastFrame, matcher, maxDescriptorDistance));
 
-		// find the essential matrix E
-		cv::Mat E = currentFrame->findEssentialMatRansac(lastFrame->getId(), ransacMaxDistance, ransacConfidence);
+		// find the essential matrix E and pose difference
+		currentMatch->compute(ransacMaxDistance, ransacConfidence);
+
+		// wait for 2 matches
+		if (lastMatch) {
+			// set the scale
+			currentMatch->setScaleFrom(*lastMatch);
+		}
 
 		// get the rotation
-		ona::Frame::Pose poseDiff = currentFrame->findPoseDiff(lastFrame->getId());
-
-		// set the scale
-		currentFrame->findScaleFrom(lastFrame, lastFrame->getId() - 1);
+		ona::Match::Pose poseDiff = currentMatch->getPoseDiff();
 
 		if (!poseDiff.R.empty()) {
 			// add to tally
@@ -230,7 +237,7 @@ int main(int argc, char **argv) {
 			std::cout << poseInfo.str() << std::endl;
 #endif
 			// drawing the results
-			cv::Mat imgMatches = currentFrame->drawMatchedFlowFrom(lastFrame->getId());
+			cv::Mat imgMatches = currentMatch->drawFlow(lastFrame->getImage());
 #ifndef NDEBUG
 			putText(imgMatches, poseInfo.str(), cv::Point(15, 15), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0xf7, 0x2e, 0xfe));
 #endif

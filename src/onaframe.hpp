@@ -38,18 +38,12 @@ namespace ona {
  * \brief An optical navgiation aid frame.
  */
 class Frame {
+	friend class Match;
+
 	public:
 		typedef std::unique_ptr<Frame> UPtr; /**< A unique pointer to a Frame */
 		typedef std::shared_ptr<Frame> SPtr; /**< A shared pointer to a Frame */
 		typedef std::weak_ptr<Frame> WPtr; /**< A weak pointer to a Frame */
-
-		/**
-		 * \brief A pose transformation.
-		 */
-		struct Pose {
-			cv::Mat R; /**< Rotation. */
-			cv::Mat t; /**< Translation. */
-		};
 
 		/**
 		 * \brief Frame constructor.
@@ -85,99 +79,13 @@ class Frame {
 		 */
 		bool compute(cv::FeatureDetector &detector, cv::DescriptorExtractor &extractor);
 
-		/**
-		 * \brief Match descriptors to another frame.
-		 *
-		 * \param frameToMatchFrom The query frame to match to.
-		 * \param frameToMatchTo The train frame to match to.
-		 * \param matcher The DescriptorMatcher to use.
-		 * \param maxDistance The maximum allowable description distance to allow.
-		 */
-		static void match(SPtr frameToMatchFrom, SPtr frameToMatchTo, cv::DescriptorMatcher &matcher, float maxDistance);
-
-		/**
-		 * \brief Find the essential matrix from frame by id to this one.
-		 *
-		 * \param id The id of the frame to calculate from.
-		 * \param ransacMaxDistance The maximum permissible distance is pixels to epipolar line.
-		 * \param ransacConfidence The desired probability that the answer is correct.
-		 *
-		 * \return The essentail matrix.
-		 */
-		cv::Mat findEssentialMatRansac(int id, double ransacMaxDistance, double ransacConfidence);
-
-		/**
-		 * \brief Finds the scale between a frame to another and that one to this.
-		 *
-		 * \param commonFrame The common frame.
-		 * \param idFrom The ID of the first frame.
-		 */
-		void findScaleFrom(SPtr commonFrame, int idFrom);
-
-		/**
-		 * \brief Finds the pose difference w.r.t a frame.
-		 *
-		 * \param id The id of the frame to find the pose difference w.r.t.
-		 *
-		 * \return Pose transformation.
-		 */
-		Pose findPoseDiff(int id);
-
-		/**
-		 * \brief Draws the matched flow from a frame.
-		 *
-		 * \param id The id of the frame to draw the flow from.
-		 *
-		 * \return The image with the flow on it.
-		 */
-		cv::Mat drawMatchedFlowFrom(int id);
-
 	private:
-		/**
-		 * \brief A match between frames.
-		 */
-		struct OnaMatch;
-
-		typedef std::unique_ptr<OnaMatch> MatchUPtr; /**< A unique pointer to an OnaMatch */
-		typedef std::shared_ptr<OnaMatch> MatchSPtr; /**< A shared pointer to an OnaMatch */
-		typedef std::weak_ptr<OnaMatch> MatchWPtr; /**< A weak pointer to an OnaMatch */
-
-		typedef std::map<int, MatchSPtr> IdMatchMapFrom; /**< Map containing matches from a frame. */
-		typedef std::map<int, MatchWPtr> IdMatchMapTo; /**< Map containing matches to a frame. */
-
 		int id_; /**< ID. */
 		cv::Mat image_; /**< Image. */
 		cv::Mat cameraMatrix_; /**< Camera matrix. */
 		std::vector<float> distCoeffs_; /**< Radial distortion coefficients. */
 		std::vector<cv::KeyPoint> keyPoints_; /**< Key points. */
 		cv::Mat descriptors_; /**< Corresponding key point descriptors. */
-		IdMatchMapFrom frameMatchesFrom_; /**< Matches to other frames. */
-		IdMatchMapTo frameMatchesTo_; /**< Matches to this frame. */
-
-		/**
-		 * \brief Gets the OnaMatch from the id.
-		 *
-		 * \param id The id.
-		 *
-		 * \return A pointer to the match, null_ptr if none.
-		 */
-		MatchSPtr getMatchById(int id);
-
-		/**
-		 * \brief Sets the essential matrix from frame by id to this one.
-		 *
-		 * \param match The match to calculate and set in.
-		 * \param ransacMaxDistance The maximum permissible distance is pixels to epipolar line.
-		 * \param ransacConfidence The desired probability that the answer is correct.
-		 */
-		void setEssentialMatRansac(OnaMatch &match, double ransacMaxDistance, double ransacConfidence);
-
-		/**
-		 * \brief Sets the pose difference for a match.
-		 *
-		 * \param match The match to calculate the pose difference for.
-		 */
-		void setPoseDiff(OnaMatch &match);
 };
 
 } // namespace ona

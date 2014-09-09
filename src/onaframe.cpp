@@ -33,13 +33,17 @@
 ona::Frame::Frame(int id, const cv::Mat &image, const cv::Mat &cameraMatrix, const std::vector<float> &distCoeffs): id_(id), image_(image), cameraMatrix_(cameraMatrix), distCoeffs_(distCoeffs) {
 }
 
-bool ona::Frame::compute(cv::FeatureDetector &detector, cv::DescriptorExtractor &extractor) {
+void ona::Frame::compute(const cv::FeatureDetector &detector, const cv::DescriptorExtractor &extractor) {
 	CV_Assert(!image_.empty());
 
 	detector.detect(image_, keyPoints_);
 	extractor.compute(image_, keyPoints_, descriptors_);
+}
 
-	return true;
+void ona::Frame::compute(const cv::Feature2D &detectorAndExtractor) {
+	CV_Assert(!image_.empty());
+
+	detectorAndExtractor(image_, cv::noArray(), keyPoints_, descriptors_);
 }
 
 int ona::Frame::getId() const {

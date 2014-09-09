@@ -166,13 +166,11 @@ int main(int argc, char **argv) {
 
 	cv::Mat totalR = cv::Mat::eye(3, 3, CV_64F);
 
-	cv::BRISK detector;
-
-	cv::BRISK &extractor = detector;
+	cv::BRISK detectorAndExtractor;
 
 	cv::BFMatcher matcher(cv::NORM_L2, true);
 
-	currentFrame->compute(detector, extractor);
+	currentFrame->compute(detectorAndExtractor);
 
 	//clock_t tFrameAcquired;
 	
@@ -203,7 +201,7 @@ int main(int argc, char **argv) {
 		//tFrameAcquired = clock();
 
 		// computing descriptors
-		currentFrame->compute(detector, extractor);
+		currentFrame->compute(detectorAndExtractor);
 
 		// compute the match with the last frame.
 		lastMatch = std::move(currentMatch);

@@ -74,10 +74,15 @@ class Frame {
 		 *
 		 * \param detector The FeatureDetector to use.
 		 * \param extractor The DescriptorExtractor to use.
-		 *
-		 * \return Successful.
 		 */
-		bool compute(cv::FeatureDetector &detector, cv::DescriptorExtractor &extractor);
+		void compute(const cv::FeatureDetector &detector, const cv::DescriptorExtractor &extractor);
+
+		/**
+		 * \brief Compute the keyPoints descriptors.
+		 *
+		 * \param detectorAndExtractor The Feature2D to use.
+		 */
+		void compute(const cv::Feature2D &detectorAndExtractor);
 
 	private:
 		int id_; /**< ID. */

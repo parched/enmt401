@@ -2,7 +2,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/nonfree/nonfree.hpp>
+#include <opencv2/imgcodecs/imgcodecs.hpp>
 
 using namespace cv;
 
@@ -22,8 +22,8 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    Mat img1 = imread(argv[1], CV_LOAD_IMAGE_GRAYSCALE);
-    Mat img2 = imread(argv[2], CV_LOAD_IMAGE_GRAYSCALE);
+    Mat img1 = imread(argv[1], IMREAD_GRAYSCALE);
+    Mat img2 = imread(argv[2], IMREAD_GRAYSCALE);
     if(img1.empty() || img2.empty())
     {
         printf("Can't read one of the images\n");
@@ -31,20 +31,20 @@ int main(int argc, char** argv)
     }
 
     // detecting keypoints
-    SurfFeatureDetector detector(400);
-    vector<KeyPoint> keypoints1, keypoints2;
+    BRISK detector(400);
+    std::vector<KeyPoint> keypoints1, keypoints2;
     detector.detect(img1, keypoints1);
     detector.detect(img2, keypoints2);
 
     // computing descriptors
-    SurfDescriptorExtractor extractor;
+    BRISK extractor;
     Mat descriptors1, descriptors2;
     extractor.compute(img1, keypoints1, descriptors1);
     extractor.compute(img2, keypoints2, descriptors2);
 
     // matching descriptors
     BFMatcher matcher(NORM_L2);
-    vector<DMatch> matches;
+    std::vector<DMatch> matches;
     matcher.match(descriptors1, descriptors2, matches);
 
     // drawing the results

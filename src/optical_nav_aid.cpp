@@ -33,8 +33,9 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/videoio/videoio.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/nonfree/nonfree.hpp>
 
 #include "matches.hpp"
 #include "pose.hpp"
@@ -57,7 +58,7 @@ namespace {
 		{0, 0, 0, 0, 0, 0}
 	};
 	
-	const float maxDescriptorDistance = 0.5;
+	const float maxDescriptorDistance = 0.0;
 	const double ransacMaxDistance = 1.;
 	const double ransacConfidence = 0.99;
 
@@ -132,7 +133,7 @@ int main(int argc, char **argv) {
 	if (cap.isOpened()) {
 		std::cout << "stream open" << std::endl;
 
-		outFps = cap.get(CV_CAP_PROP_FPS);
+		outFps = cap.get(cv::CAP_PROP_FPS);
 
 		cv::Mat image;
 		if(cap.read(image)) {
@@ -145,13 +146,13 @@ int main(int argc, char **argv) {
 		input = PIC;
 		std::cout << "stream not open" << std::endl;
 
-		lastFrame = ona::Frame::UPtr(new ona::Frame(frameCounter - 1, cv::imread("/usr/share/opencv/samples/cpp/tsukuba_l.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
-		currentFrame = ona::Frame::UPtr(new ona::Frame(frameCounter, cv::imread("/usr/share/opencv/samples/cpp/tsukuba_r.png", CV_LOAD_IMAGE_GRAYSCALE), K, distCoeffs));
+		lastFrame = ona::Frame::UPtr(new ona::Frame(frameCounter - 1, cv::imread("/usr/share/OpenCV/samples/cpp/tsukuba_l.png", cv::IMREAD_GRAYSCALE), K, distCoeffs));
+		currentFrame = ona::Frame::UPtr(new ona::Frame(frameCounter, cv::imread("/usr/share/OpenCV/samples/cpp/tsukuba_r.png", cv::IMREAD_GRAYSCALE), K, distCoeffs));
 	}
 
 	cv::VideoWriter out;
 	if (!arguments.outputFile.empty()) {
-		out.open(arguments.outputFile, CV_FOURCC('H', '2', '6', '4'), outFps, currentFrame->getImage().size());
+		out.open(arguments.outputFile, cv::VideoWriter::fourcc('H', '2', '6', '4'), outFps, currentFrame->getImage().size());
 
 		if (out.isOpened()) {
 			std::cout << "writing to " << arguments.outputFile << std::endl;
@@ -165,10 +166,10 @@ int main(int argc, char **argv) {
 
 	cv::Mat totalR = cv::Mat::eye(3, 3, CV_64F);
 
-	cv::SurfFeatureDetector detector(400);
+	cv::BRISK detector;
 
-	cv::SurfDescriptorExtractor extractor;
-	
+	cv::BRISK &extractor = detector;
+
 	cv::BFMatcher matcher(cv::NORM_L2, true);
 
 	currentFrame->compute(detector, extractor);

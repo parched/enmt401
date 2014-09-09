@@ -95,7 +95,7 @@ static double computeReprojectionErrors(
     {
         projectPoints(Mat(objectPoints[i]), rvecs[i], tvecs[i],
                       cameraMatrix, distCoeffs, imagePoints2);
-        err = norm(Mat(imagePoints[i]), Mat(imagePoints2), CV_L2);
+        err = norm(Mat(imagePoints[i]), Mat(imagePoints2), NORM_L2);
         int n = (int)objectPoints[i].size();
         perViewErrors[i] = (float)std::sqrt(err*err/n);
         totalErr += err*err;

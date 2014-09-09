@@ -1,6 +1,8 @@
 
 #include "matches.hpp"
 
+#include <opencv2/imgproc/imgproc.hpp>
+
 void getMatchedPoints(std::vector<cv::Point2f> &lastPoints, std::vector<cv::Point2f> &currentPoints, const std::vector<cv::KeyPoint> &keyPointsLast, const std::vector<cv::KeyPoint> &keyPointsCurrent, const std::vector<cv::DMatch> &matches, float maxDistance) {
 
 	for (const cv::DMatch &match : matches) {
@@ -14,8 +16,8 @@ void getMatchedPoints(std::vector<cv::Point2f> &lastPoints, std::vector<cv::Poin
 void drawMatchedFlow(const cv::Mat &currentFrame, cv::Mat &imgMatches, const std::vector<cv::Point2f> &lastPoints, const std::vector<cv::Point2f> &currentPoints, const std::vector<uchar> &inliers) {
 	currentFrame.copyTo(imgMatches);
 
-	assert(lastPoints.size() == currentPoints.size());
-	assert(lastPoints.size() == inliers.size());
+	CV_Assert(lastPoints.size() == currentPoints.size());
+	CV_Assert(lastPoints.size() == inliers.size());
 
 	for (std::vector<cv::Point2f>::size_type i = 0; i != lastPoints.size(); i++) {
 		if (inliers[i]) {

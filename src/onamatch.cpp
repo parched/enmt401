@@ -73,56 +73,61 @@ int ona::Match::compute(double ransacMaxDistance, double ransacConfidence) {
 }
 
 void ona::Match::setScaleFrom(const Match &matchFrom) {
-	// TODO: check frame IDs to check for common frame.
-	std::vector<int> thisMatchIdx, fromMatchIdx;
+	if (trainFrameId_ == matchFrom.queryFrameId_) {
+		std::vector<int> thisMatchIdx, fromMatchIdx;
 
-	auto fromStartIter = matchFrom.queryIdx_.begin();
-	auto fromEndIter = matchFrom.queryIdx_.end();
+		auto fromStartIter = matchFrom.queryIdx_.begin();
+		auto fromEndIter = matchFrom.queryIdx_.end();
 
-	for (std::size_t i = 0; i < inliers_.size(); i++) {
-		if (inliers_[i]) {
-			auto fromFoundIter = std::find(fromStartIter, fromEndIter, trainIdx_[i]);
-			if (fromFoundIter != fromEndIter) {
-				std::size_t fromIterIdx = fromFoundIter - fromStartIter;
-				if (matchFrom.inliers_[fromIterIdx]) {
-					thisMatchIdx.push_back(i);
-					fromMatchIdx.push_back(fromIterIdx);
-					fromStartIter = fromFoundIter;
+		for (std::size_t i = 0; i < inliers_.size(); i++) {
+			if (inliers_[i]) {
+				auto fromFoundIter = std::find(fromStartIter, fromEndIter, trainIdx_[i]);
+				if (fromFoundIter != fromEndIter) {
+					std::size_t fromIterIdx = fromFoundIter - fromStartIter;
+					if (matchFrom.inliers_[fromIterIdx]) {
+						thisMatchIdx.push_back(i);
+						fromMatchIdx.push_back(fromIterIdx);
+						fromStartIter = fromFoundIter;
+					}
 				}
 			}
 		}
-	}
 
 
-	if (thisMatchIdx.empty()) {
-		return;
-	} else {
-		std::vector<float> scales(thisMatchIdx.size());
+		if (thisMatchIdx.empty()) {
+			return;
+		} else {
+			std::vector<float> scales(thisMatchIdx.size());
 
-		const cv::Mat_<float> &fromPts = matchFrom.points3D_;
-		const cv::Mat_<float> &toPts = points3D_;
+			const cv::Mat_<float> &fromPts = matchFrom.points3D_;
+			const cv::Mat_<float> &toPts = points3D_;
 
-		for (std::size_t i = 1; i < thisMatchIdx.size(); i++) {
-			// Assume homogenous with 1 end.
-			const cv::Vec3f vecFrom(
-					fromPts(0, i) - fromPts(0, i - 1),
-					fromPts(1, i) - fromPts(1, i - 1),
-					fromPts(2, i) - fromPts(2, i - 1)
-					);
-			const cv::Vec3f vecTo(
-					toPts(0, i) - toPts(0, i - 1),
-					toPts(1, i) - toPts(1, i - 1),
-					toPts(2, i) - toPts(2, i - 1)
-					);
-			scales.push_back(norm(vecTo) / norm(vecFrom));
+			for (std::size_t i = 1; i < thisMatchIdx.size(); i++) {
+				// Assume homogenous with 1 end.
+				const cv::Vec3f vecFrom(
+						fromPts(0, i) - fromPts(0, i - 1),
+						fromPts(1, i) - fromPts(1, i - 1),
+						fromPts(2, i) - fromPts(2, i - 1)
+						);
+				const cv::Vec3f vecTo(
+						toPts(0, i) - toPts(0, i - 1),
+						toPts(1, i) - toPts(1, i - 1),
+						toPts(2, i) - toPts(2, i - 1)
+						);
+				scales.push_back(norm(vecTo) / norm(vecFrom));
+			}
+
+			// Find the median scale
+			std::sort(scales.begin(), scales.end());
+
+			scale_ = matchFrom.scale_ * scales[scales.size() / 2];
+
+			poseDiff_.t *= scale_;
 		}
-
-		// Find the median scale
-		std::sort(scales.begin(), scales.end());
-
-		scale_ = matchFrom.scale_ * scales[scales.size() / 2];
-
-		poseDiff_.t *= scale_;
+#ifndef NDEBUG
+	} else {
+		std::cout << "No common Frame between matches" << std::endl;
+#endif
 	}
 }
 

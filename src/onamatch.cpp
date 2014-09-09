@@ -137,7 +137,11 @@ cv::Mat ona::Match::drawFlow(const cv::Mat &image) {
 }
 
 void ona::Match::setEssentialMatRansac(double ransacMaxDistance, double ransacConfidence) {
-	if (queryNormalisedPoints_.size() > 0) {
+	int numPoints = queryNormalisedPoints_.size();
+
+	if (numPoints > 4) {
+		essential_ = findEssentialMat(trainNormalisedPoints_, queryNormalisedPoints_, cv::RANSAC, ransacMaxDistance, ransacConfidence, inliers_);
+	} else if (numPoints > 0) {
 		essential_ = findFundamentalMat(trainNormalisedPoints_, queryNormalisedPoints_, cv::FM_RANSAC, ransacMaxDistance, ransacConfidence, inliers_);
 	}
 }

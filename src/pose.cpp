@@ -150,11 +150,6 @@ int recoverPose( InputArray E, InputArray _points1, InputArray _points2, OutputA
     mask4 = (Q.row(2) > 0) & mask4;
     mask4 = (Q.row(2) < dist) & mask4;
 
-    mask1 = mask1;
-    mask2 = mask2;
-    mask3 = mask3;
-    mask4 = mask4;
-
     // If _mask is given, then use it to filter outliers.
     if (!_mask.empty())
     {

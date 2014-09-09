@@ -66,7 +66,9 @@ ona::Match::Match(const Frame &queryFrame, const Frame &trainFrame, cv::Descript
 
 int ona::Match::compute(double ransacMaxDistance, double ransacConfidence) {
 	setEssentialMatRansac(ransacMaxDistance, ransacConfidence);
-	setPoseDiff();
+	if (!essential_.empty()) {
+		setPoseDiff();
+	}
 	return inliers_.size();
 }
 

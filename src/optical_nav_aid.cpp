@@ -208,7 +208,7 @@ int main(int argc, char **argv) {
 		currentMatch = ona::Match::UPtr(new ona::Match(*currentFrame, *lastFrame, matcher, maxDescriptorDistance));
 
 		// find the essential matrix E and pose difference
-		currentMatch->compute(ransacMaxDistance, ransacConfidence);
+		int numInliers = currentMatch->compute(ransacMaxDistance, ransacConfidence);
 
 		// wait for 2 matches
 		if (lastMatch) {
@@ -221,7 +221,9 @@ int main(int argc, char **argv) {
 
 		if (!poseDiff.R.empty()) {
 			// add to tally
-			totalR = totalR * poseDiff.R;
+			if (numInliers > 20 ) {
+				totalR = totalR * poseDiff.R;
+			}
 #ifndef NDEBUG
 			cv::Vec3d eulerAngles;
 			getEulerAngles(totalR, eulerAngles);

@@ -85,6 +85,13 @@ class Match {
 		Pose getPoseDiff();
 
 		/**
+		 * \brief Gets the 3D points.
+		 *
+		 * \return The 3D points.
+		 */
+		cv::Mat get3dPoints();
+
+		/**
 		 * \brief Draws the matched flow on an image
 		 *
 		 * \param image The image to use as the background.

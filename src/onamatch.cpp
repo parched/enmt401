@@ -174,6 +174,18 @@ cv::Mat ona::Match::drawFlow(const cv::Mat &image) {
 
 	return drawnImage;
 }
+cv::Mat ona::Match::get3dPoints() {
+	cv::Mat points;
+	std::vector<cv::Mat> vectorOfPoints;
+
+	vectorOfPoints.push_back(points3D_.col(0));
+	vectorOfPoints.push_back(points3D_.col(1));
+	vectorOfPoints.push_back(points3D_.col(2));
+
+	cv::merge(points3D_, points);
+
+	return points;
+}
 
 void ona::Match::setEssentialMatRansac(double ransacMaxDistance, double ransacConfidence) {
 	int numPoints = queryNormalisedPoints_.size();

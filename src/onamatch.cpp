@@ -74,7 +74,7 @@ int ona::Match::compute(double ransacMaxDistance, double ransacConfidence) {
 
 void ona::Match::setScaleFrom(const Match &matchFrom) {
 	// check for a common frame and essentail matrices found
-	if (trainFrameId_ == matchFrom.queryFrameId_ && !essential_.empty() && !matchFrom.essential_.empty()) {
+	if (trainFrameId_ == matchFrom.queryFrameId_ && !essential_.empty() && !matchFrom.essential_.empty() && matchFrom.scale_ != 0.0) {
 		std::vector<int> thisMatchIdx, fromMatchIdx;
 
 		auto fromStartIter = matchFrom.queryIdx_.begin();

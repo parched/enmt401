@@ -127,7 +127,7 @@ void ona::Match::setScaleFrom(const Match &matchFrom) {
 		if (thisMatchIdx.empty()) {
 			return;
 		} else {
-			std::vector<float> scales(thisMatchIdx.size());
+			std::vector<float> scales;
 
 			const cv::Mat_<float> &fromPts = matchFrom.points3D_;
 			const cv::Mat_<float> &toPts = points3D_;

@@ -73,7 +73,8 @@ int ona::Match::compute(double ransacMaxDistance, double ransacConfidence) {
 }
 
 void ona::Match::setScaleFrom(const Match &matchFrom) {
-	if (trainFrameId_ == matchFrom.queryFrameId_) {
+	// check for a common frame and essentail matrices found
+	if (trainFrameId_ == matchFrom.queryFrameId_ && !essential_.empty() && !matchFrom.essential_.empty()) {
 		std::vector<int> thisMatchIdx, fromMatchIdx;
 
 		auto fromStartIter = matchFrom.queryIdx_.begin();
@@ -126,7 +127,7 @@ void ona::Match::setScaleFrom(const Match &matchFrom) {
 		}
 #ifndef NDEBUG
 	} else {
-		std::cout << "No common Frame between matches" << std::endl;
+		std::cout << "No common Frame between matches || essential matrices not found." << std::endl;
 #endif
 	}
 }

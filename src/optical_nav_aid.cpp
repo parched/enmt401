@@ -240,6 +240,10 @@ int main(int argc, char **argv) {
 			// drawing the results
 			cv::Mat imgMatches = currentMatch->drawFlow(lastFrame->getImage());
 #ifndef NDEBUG
+			if (imgMatches.type() == CV_8UC1) {
+				//input image is grayscale
+				cvtColor(imgMatches, imgMatches, cv::COLOR_GRAY2RGB);
+			}
 			putText(imgMatches, poseInfo.str(), cv::Point(15, 15), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0xf7, 0x2e, 0xfe));
 #endif
 

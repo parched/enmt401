@@ -36,6 +36,7 @@
 #include <opencv2/videoio/videoio.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/viz/vizcore.hpp>
 
 #include "matches.hpp"
 #include "pose.hpp"
@@ -253,6 +254,17 @@ int main(int argc, char **argv) {
 			imshow("matches", imgMatches);
 
 			out.write(imgMatches);
+
+			// viz
+			cv::viz::Viz3d viz3d("3D points");
+
+			cv::viz::WCloud cloud(currentMatch->get3dPoints(), cv::viz::Color::red());
+
+			viz3d.showWidget("points", cloud);
+
+			viz3d.spin();
+
+
 		}
 	}
 

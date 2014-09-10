@@ -83,7 +83,7 @@ void ona::Match::setScaleFrom(const Match &matchFrom) {
 			if (inliers_[i]) {
 				auto fromFoundIter = std::find(fromStartIter, fromEndIter, trainIdx_[i]);
 				if (fromFoundIter != fromEndIter) {
-					std::size_t fromIterIdx = fromFoundIter - fromStartIter;
+					auto fromIterIdx = std::distance(matchFrom.queryIdx_.begin(), fromFoundIter);
 					if (matchFrom.inliers_[fromIterIdx]) {
 						thisMatchIdx.push_back(i);
 						fromMatchIdx.push_back(fromIterIdx);

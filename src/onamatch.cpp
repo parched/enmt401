@@ -36,6 +36,25 @@
 #include "pose.hpp"
 #include "matches.hpp"
 
+#define MATCH_DIST_MIN_RANK 0
+#define MATCH_DIST_MAX_RANK 9/10
+
+
+namespace {
+
+struct DMatchDist {
+	std::size_t matchIdx;
+	double distance;
+
+	DMatchDist(std::size_t _matchIdx, float _distance): matchIdx(_matchIdx), distance(_distance) {
+	}
+
+	bool operator<(const DMatchDist &otherMatch) const {
+		return distance < otherMatch.distance;
+	}
+};
+} // namspace
+
 ona::Match::Match(const Frame &queryFrame, const Frame &trainFrame, cv::DescriptorMatcher &matcher, float maxDistance) {
 	queryFrameId_ = queryFrame.id_;
 	trainFrameId_ = trainFrame.id_;
@@ -44,7 +63,17 @@ ona::Match::Match(const Frame &queryFrame, const Frame &trainFrame, cv::Descript
 	if (!queryFrame.descriptors_.empty() && !trainFrame.descriptors_.empty()) {
 		matcher.match(queryFrame.descriptors_, trainFrame.descriptors_, matches);
 
-		for (const cv::DMatch &match : matches) {
+		// we'll filter out the outliers that are too far apart on the image.
+		std::vector<DMatchDist> matchDists;
+		for (std::size_t i = 0; i < matches.size(); i++) {
+			matchDists.push_back(DMatchDist(i,
+						cv::norm(queryFrame.keyPoints_[matches[i].queryIdx].pt - trainFrame.keyPoints_[matches[i].trainIdx].pt)));
+		}
+
+		std::sort(matchDists.begin(), matchDists.end());
+
+		for (std::size_t i = matchDists.size() * MATCH_DIST_MIN_RANK; i < matchDists.size() * MATCH_DIST_MAX_RANK; i++) {
+			cv::DMatch &match = matches[matchDists[i].matchIdx];
 			if (maxDistance == 0 || match.distance <= maxDistance) {
 				queryPoints_.push_back(queryFrame.keyPoints_[match.queryIdx].pt);
 				trainPoints_.push_back(trainFrame.keyPoints_[match.trainIdx].pt);

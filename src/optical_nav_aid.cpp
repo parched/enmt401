@@ -58,7 +58,7 @@ namespace {
 		{0, 0, 0, 0, 0, 0}
 	};
 	
-	const float maxDescriptorDistance = 0.0;
+	const float maxDescriptorDistance = 100.0;
 	const double ransacMaxDistance = 1.;
 	const double ransacConfidence = 0.99;
 

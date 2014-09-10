@@ -106,14 +106,14 @@ void ona::Match::setScaleFrom(const Match &matchFrom) {
 			for (std::size_t i = 1; i < thisMatchIdx.size(); i++) {
 				// Assume homogenous with 1 end.
 				const cv::Vec3f vecFrom(
-						fromPts(0, i) - fromPts(0, i - 1),
-						fromPts(1, i) - fromPts(1, i - 1),
-						fromPts(2, i) - fromPts(2, i - 1)
+						fromPts(0, fromMatchIdx[i]) - fromPts(0, fromMatchIdx[i - 1]),
+						fromPts(1, fromMatchIdx[i]) - fromPts(1, fromMatchIdx[i - 1]),
+						fromPts(2, fromMatchIdx[i]) - fromPts(2, fromMatchIdx[i - 1])
 						);
 				const cv::Vec3f vecTo(
-						toPts(0, i) - toPts(0, i - 1),
-						toPts(1, i) - toPts(1, i - 1),
-						toPts(2, i) - toPts(2, i - 1)
+						toPts(0, thisMatchIdx[i]) - toPts(0, thisMatchIdx[i - 1]),
+						toPts(1, thisMatchIdx[i]) - toPts(1, thisMatchIdx[i - 1]),
+						toPts(2, thisMatchIdx[i]) - toPts(2, thisMatchIdx[i - 1])
 						);
 				scales.push_back(norm(vecTo) / norm(vecFrom));
 			}

@@ -166,9 +166,9 @@ int main(int argc, char **argv) {
 
 	cv::Mat totalR = cv::Mat::eye(3, 3, CV_64F);
 
-	cv::BRISK detectorAndExtractor;
+	cv::AKAZE detectorAndExtractor;
 
-	cv::BFMatcher matcher(cv::NORM_L2, true);
+	cv::BFMatcher matcher(cv::NORM_HAMMING, true);
 
 	currentFrame->compute(detectorAndExtractor);
 

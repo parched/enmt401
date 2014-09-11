@@ -147,12 +147,14 @@ void ona::Match::setScaleFrom(const Match &matchFrom) {
 				scales.push_back(norm(vecTo) / norm(vecFrom));
 			}
 
-			// Find the median scale
-			std::sort(scales.begin(), scales.end());
+			if (!scales.empty()) {
+				// Find the median scale
+				std::sort(scales.begin(), scales.end());
 
-			scale_ = matchFrom.scale_ * scales[scales.size() / 2];
+				scale_ = matchFrom.scale_ * scales[scales.size() / 2];
 
-			poseDiff_.t *= scale_;
+				poseDiff_.t *= scale_;
+			}
 		}
 #ifndef NDEBUG
 	} else {

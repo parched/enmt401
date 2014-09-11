@@ -258,9 +258,14 @@ int main(int argc, char **argv) {
 			// viz
 			cv::viz::Viz3d viz3d("3D points");
 
+			// Add coordinate axes
+			viz3d.showWidget("Coordinate Widget", cv::viz::WCoordinateSystem(0.1));
+
 			cv::viz::WCloud cloud(currentMatch->get3dPoints(), cv::viz::Color::red());
 
 			viz3d.showWidget("points", cloud);
+
+			viz3d.setRenderingProperty("points", cv::viz::POINT_SIZE, 4.0);
 
 			viz3d.spin();
 

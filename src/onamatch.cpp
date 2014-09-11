@@ -178,11 +178,11 @@ cv::Mat ona::Match::get3dPoints() {
 	cv::Mat points;
 	std::vector<cv::Mat> vectorOfPoints;
 
-	vectorOfPoints.push_back(points3D_.col(0));
-	vectorOfPoints.push_back(points3D_.col(1));
-	vectorOfPoints.push_back(points3D_.col(2));
+	vectorOfPoints.push_back(points3D_.row(0));
+	vectorOfPoints.push_back(points3D_.row(1));
+	vectorOfPoints.push_back(points3D_.row(2));
 
-	cv::merge(points3D_, points);
+	cv::merge(vectorOfPoints, points);
 
 	return points;
 }

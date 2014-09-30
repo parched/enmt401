@@ -17,12 +17,15 @@ void drawMatchedFlow(const cv::Mat &currentFrame, cv::Mat &imgMatches, const std
 	currentFrame.copyTo(imgMatches);
 
 	CV_Assert(lastPoints.size() == currentPoints.size());
-	CV_Assert(lastPoints.size() == inliers.size());
 
-	for (std::vector<cv::Point2f>::size_type i = 0; i != lastPoints.size(); i++) {
-		if (inliers[i]) {
-			line(imgMatches, lastPoints[i], currentPoints[i], cv::Scalar(0, 0, 255));
-			circle(imgMatches, currentPoints[i], 2, cv::Scalar(0, 0, 255));
+	if (!inliers.empty()) {
+		CV_Assert(lastPoints.size() == inliers.size());
+
+		for (std::vector<cv::Point2f>::size_type i = 0; i != lastPoints.size(); i++) {
+			if (inliers[i]) {
+				line(imgMatches, lastPoints[i], currentPoints[i], cv::Scalar(0, 0, 255));
+				circle(imgMatches, currentPoints[i], 2, cv::Scalar(0, 0, 255));
+			}
 		}
 	}
 }

@@ -219,12 +219,21 @@ int main(int argc, char **argv) {
 		// get the rotation
 		ona::Match::Pose poseDiff = currentMatch->getPoseDiff();
 
+		// drawing the results
+		cv::Mat imgMatches;
+		lastFrame->getImage().copyTo(imgMatches);
+		if (imgMatches.type() == CV_8UC1) {
+			//input image is grayscale
+			cvtColor(imgMatches, imgMatches, cv::COLOR_GRAY2RGB);
+		}
+		imgMatches = currentMatch->drawFlow(imgMatches);
+
+#ifndef NDEBUG
 		if (!poseDiff.R.empty()) {
 			// add to tally
 			if (numInliers > 20 ) {
 				totalR = totalR * poseDiff.R;
 			}
-#ifndef NDEBUG
 			cv::Vec3d eulerAngles;
 			getEulerAngles(totalR, eulerAngles);
 			std::stringstream poseInfo;
@@ -236,24 +245,15 @@ int main(int argc, char **argv) {
 				<< std::setw(6) << poseDiff.t.at<double>(1) 
 				<< std::setw(6) << poseDiff.t.at<double>(2);
 			std::cout << poseInfo.str() << std::endl;
-#endif
-			// drawing the results
-			cv::Mat imgMatches;
-			lastFrame->getImage().copyTo(imgMatches);
-			if (imgMatches.type() == CV_8UC1) {
-				//input image is grayscale
-				cvtColor(imgMatches, imgMatches, cv::COLOR_GRAY2RGB);
-			}
-			imgMatches = currentMatch->drawFlow(imgMatches);
-#ifndef NDEBUG
+
 			putText(imgMatches, poseInfo.str(), cv::Point(15, 15), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0xf7, 0x2e, 0xfe));
+		}
 #endif
 
-			cv::namedWindow("matches", 1);
-			imshow("matches", imgMatches);
+		cv::namedWindow("matches", 1);
+		imshow("matches", imgMatches);
 
-			out.write(imgMatches);
-		}
+		out.write(imgMatches);
 	}
 
 	return 0;
